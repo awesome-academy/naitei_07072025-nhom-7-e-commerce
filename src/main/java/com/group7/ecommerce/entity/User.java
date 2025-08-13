@@ -82,8 +82,9 @@ public class User {
     // Constructors
     public User() {}
 
-    public User(String email, String fullName, String phone, String password) {
+    public User(String email, String username, String fullName, String phone, String password) {
         this.email = email;
+        this.username = username;
         this.fullName = fullName;
         this.phone = phone;
         this.password = password;
