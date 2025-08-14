@@ -4,6 +4,7 @@ import com.group7.ecommerce.dto.request.ProductDto;
 import com.group7.ecommerce.entity.Category;
 import com.group7.ecommerce.entity.Product;
 import com.group7.ecommerce.entity.ProductImage;
+import com.group7.ecommerce.mapper.ProductMapper;
 import com.group7.ecommerce.repository.CategoryRepository;
 import com.group7.ecommerce.repository.ProductImageRepository;
 import com.group7.ecommerce.repository.ProductRepository;
@@ -21,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.*;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +36,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
+    private final ProductMapper productMapper;
 
     @Override
     @Transactional
@@ -52,24 +53,7 @@ public class ProductServiceImpl implements ProductService {
                     Row row = sheet.getRow(i);
                     if (row == null) continue;
 
-                    // Map dữ liệu từ Excel sang DTO
-                    ProductDto dto = new ProductDto();
-                    dto.setName(getCellString(row.getCell(0)));
-                    dto.setDescription(getCellString(row.getCell(1)));
-                    dto.setImportPrice(getBigDecimalFromCell(row.getCell(2)));
-                    dto.setSellingPrice(getBigDecimalFromCell(row.getCell(3)));
-                    dto.setStockQuantity(getIntFromCell(row.getCell(4)));
-                    dto.setCategoryId(getLongFromCell(row.getCell(5)));
-
-                    String imageFileName = getCellString(row.getCell(6));
-                    List<String> imageList = Arrays.stream(imageFileName.split(","))
-                            .map(String::trim)
-                            .filter(s -> !s.isEmpty())
-                            .collect(Collectors.toList());
-                    dto.setImageUrls(imageList);
-
-                    dto.setFeatured(getBooleanFromCell(row.getCell(7)));
-                    dto.setDeleted(getBooleanFromCell(row.getCell(8)));
+                    ProductDto dto = mapRowToDto(row);
 
                     // Validate DTO
                     Set<ConstraintViolation<ProductDto>> violations = validator.validate(dto);
@@ -77,14 +61,15 @@ public class ProductServiceImpl implements ProductService {
                         String errors = violations.stream()
                                 .map(v -> v.getPropertyPath() + ": " + v.getMessage())
                                 .collect(Collectors.joining(", "));
-                        throw new RuntimeException("Lỗi dữ liệu dòng " + (i+1) + ": " + errors);
+
+                        throw new RuntimeException("Lỗi dữ liệu dòng " + (i + 1) + ": " + errors);
                     }
 
-                    Category category = categoryRepository.findById(dto.getCategoryId())
-                            .orElseThrow(() -> new RuntimeException("Category không tồn tại: " + dto.getCategoryId()));
+                    Category category = categoryRepository.findById(dto.categoryId())
+                            .orElseThrow(() -> new RuntimeException("Category không tồn tại: " + dto.categoryId()));
 
                     // Copy ảnh vào static
-                    for (String img : dto.getImageUrls()) {
+                    for (String img : dto.imageUrls()) {
                         String fileNameOnly = img.replace("\\", "/");
                         fileNameOnly = fileNameOnly.substring(fileNameOnly.lastIndexOf('/') + 1);
                         Path sourceImage = imageDir.resolve(img);
@@ -98,23 +83,15 @@ public class ProductServiceImpl implements ProductService {
                     }
 
                     // Tạo Product
-                    Product product = Product.builder()
-                            .name(dto.getName())
-                            .description(dto.getDescription())
-                            .importPrice(dto.getImportPrice())
-                            .sellingPrice(dto.getSellingPrice())
-                            .stockQuantity(dto.getStockQuantity())
-                            .category(category)
-                            .isFeatured(dto.isFeatured())
-                            .isDeleted(dto.isDeleted())
-                            .createdAt(LocalDateTime.now())
-                            .updatedAt(LocalDateTime.now())
-                            .build();
+
+                    Product product = productMapper.toEntity(dto);
+                    product.setCategory(category);
                     productRepository.save(product);
 
                     // Thêm ảnh của sản phẩm
                     boolean first = true;
-                    for (String img : dto.getImageUrls()) {
+
+                    for (String img : dto.imageUrls()) {
                         ProductImage productImage = new ProductImage();
                         productImage.setProduct(product);
                         productImage.setImageUrl(img);
@@ -131,6 +108,36 @@ public class ProductServiceImpl implements ProductService {
         } catch (Exception e) {
             throw new RuntimeException("Lỗi import sản phẩm", e);
         }
+    }
+
+    private ProductDto mapRowToDto(Row row) {
+        String name = getCellString(row.getCell(0));
+        String description = getCellString(row.getCell(1));
+        BigDecimal importPrice = getBigDecimalFromCell(row.getCell(2));
+        BigDecimal sellingPrice = getBigDecimalFromCell(row.getCell(3));
+        int stockQuantity = getIntFromCell(row.getCell(4));
+        Long categoryId = getLongFromCell(row.getCell(5));
+
+        String imageFileName = getCellString(row.getCell(6));
+        List<String> imageList = Arrays.stream(imageFileName.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+
+        boolean isFeatured = getBooleanFromCell(row.getCell(7));
+        boolean isDeleted = getBooleanFromCell(row.getCell(8));
+
+        return new ProductDto(
+                name,
+                description,
+                importPrice,
+                sellingPrice,
+                stockQuantity,
+                categoryId,
+                imageList,
+                isFeatured,
+                isDeleted
+        );
     }
 
     private String getCellString(Cell cell) {
