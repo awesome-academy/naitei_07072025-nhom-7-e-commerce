@@ -1,0 +1,6 @@
+INSERT INTO categories (name, description, created_at, updated_at) VALUES
+('Áo Thun Nam', 'Các loại áo thun dành cho nam giới', NOW(), NOW()),
+('Quần Jeans Nữ', 'Các loại quần jeans dành cho nữ', NOW(), NOW()),
+('Giày Sneaker', 'Các loại giày sneaker thời trang', NOW(), NOW()),
+('Áo Khoác', 'Các loại áo khoác mùa đông và hè', NOW(), NOW()),
+('Phụ Kiện', 'Túi xách, thắt lưng, mũ, vv', NOW(), NOW());
