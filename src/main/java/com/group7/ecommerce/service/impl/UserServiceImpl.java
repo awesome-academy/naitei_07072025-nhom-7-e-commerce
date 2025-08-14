@@ -1,8 +1,12 @@
 package com.group7.ecommerce.service.impl;
 
+import com.group7.ecommerce.dto.request.LoginDto;
 import com.group7.ecommerce.dto.request.UserRegistrationDto;
 import com.group7.ecommerce.dto.request.VerifyOtpDto;
+import com.group7.ecommerce.dto.response.JwtResponse;
 import com.group7.ecommerce.entity.User;
+import com.group7.ecommerce.utils.CustomUserDetails;
+import com.group7.ecommerce.utils.JwtUtils;
 import com.group7.ecommerce.utils.constant.message.SuccessMessages;
 import com.group7.ecommerce.utils.helper.UserHelper;
 import com.group7.ecommerce.utils.validator.UserValidator;
@@ -10,6 +14,10 @@ import com.group7.ecommerce.repository.UserRepository;
 import com.group7.ecommerce.service.EmailService;
 import com.group7.ecommerce.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +30,8 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     private final UserValidator userValidator;
     private final UserHelper userHelper;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtils jwtUtils;
 
     @Override
     public String registerUser(UserRegistrationDto dto) {
@@ -65,5 +75,35 @@ public class UserServiceImpl implements UserService {
         userHelper.updateUserWithNewOtp(user);
 
         return SuccessMessages.RESEND_OTP_SUCCESS;
+    }
+
+    @Override
+    public JwtResponse authenticateUser(LoginDto loginDto) {
+
+        // Validate input
+        userValidator.validateLoginCredentials(loginDto);
+
+        // Find user first to validate existence and status
+        User user = userHelper.findUserByEmailOrUsernameOrThrow(loginDto.getEmailOrUsername());
+
+        // Validate user account status
+        userValidator.validateUserAccountActive(user);
+
+        // Authenticate user
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginDto.getEmailOrUsername(),
+                        loginDto.getPassword()));
+
+        // Set authentication context
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // Generate JWT token
+        String jwt = jwtUtils.generateJwtToken(authentication);
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        // Return JWT response with user information
+        return new JwtResponse(jwt, user.getEmail(), user.getUsername(), user.getFullName());
     }
 }

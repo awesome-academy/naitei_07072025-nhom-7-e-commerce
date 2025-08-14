@@ -6,6 +6,8 @@ public class ErrorMessages {
     public static final String OTP_EXPIRED = "OTP đã hết hạn";
     public static final String OTP_INVALID = "OTP không đúng";
     public static final String EMAIL_ALREADY_VERIFIED = "Email đã được xác nhận";
+    public static final String LOGIN_DATA_NULL = "Thông tin đăng nhập không được để trống";
+    public static final String EMAIL_NOT_VERIFIED = "Tài khoản chưa được xác thực email";
 
     private ErrorMessages() {
         // Utility class

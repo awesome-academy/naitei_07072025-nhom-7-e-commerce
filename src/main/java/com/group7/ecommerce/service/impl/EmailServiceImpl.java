@@ -1,13 +1,21 @@
 package com.group7.ecommerce.service.impl;
 
 import com.group7.ecommerce.service.EmailService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +23,8 @@ import org.springframework.stereotype.Service;
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
+    private final TemplateEngine templateEngine;
+    private final MessageSource messageSource;
 
     @Value("${app.email.from:noreply@ecommerce.com}")
     private String fromEmail;
@@ -22,19 +32,42 @@ public class EmailServiceImpl implements EmailService {
     @Value("${app.name:E-Commerce}")
     private String appName;
 
+    @Value("${app.frontend.url:http://localhost:3000}")
+    private String frontendUrl;
+
     @Override
     @Async
     public void sendOtpEmail(String to, String otp) {
         try {
-            SimpleMailMessage message = createBaseMessage(to);
-            message.setSubject("Mã xác nhận đăng ký tài khoản");
-            message.setText(buildOtpEmailContent(otp));
+            Locale locale = LocaleContextHolder.getLocale();
 
-            mailSender.send(message);
+            // Prepare template variables
+            Context context = new Context(locale);
+            context.setVariable("recipientName", extractNameFromEmail(to));
+            context.setVariable("otp", otp);
+            context.setVariable("appName", appName);
+            context.setVariable("frontendUrl", frontendUrl);
+            context.setVariable("expiryMinutes", 5);
+
+            // Generate HTML content from template
+            String htmlContent = templateEngine.process("emails/otp-verification", context);
+
+            // Get localized subject
+            String subject = messageSource.getMessage(
+                    "email.otp.subject",
+                    new Object[]{appName},
+                    locale
+            );
+
+            sendHtmlEmail(to, subject, htmlContent);
             log.info("OTP email sent successfully to: {}", to);
+
         } catch (Exception e) {
             log.error("Failed to send OTP email to: {}", to, e);
-            throw new RuntimeException("Không thể gửi email OTP", e);
+            throw new RuntimeException(
+                    messageSource.getMessage("email.send.error", null, LocaleContextHolder.getLocale()),
+                    e
+            );
         }
     }
 
@@ -42,15 +75,32 @@ public class EmailServiceImpl implements EmailService {
     @Async
     public void sendWelcomeEmail(String to, String fullName) {
         try {
-            SimpleMailMessage message = createBaseMessage(to);
-            message.setSubject("Chào mừng bạn đến với " + appName);
-            message.setText(buildWelcomeEmailContent(fullName));
+            Locale locale = LocaleContextHolder.getLocale();
 
-            mailSender.send(message);
+            Context context = new Context(locale);
+            context.setVariable("recipientName", fullName);
+            context.setVariable("appName", appName);
+            context.setVariable("frontendUrl", frontendUrl);
+            context.setVariable("dashboardUrl", frontendUrl + "/dashboard");
+            context.setVariable("supportEmail", "support@ecommerce.com");
+
+            String htmlContent = templateEngine.process("emails/welcome", context);
+
+            String subject = messageSource.getMessage(
+                    "email.welcome.subject",
+                    new Object[]{appName},
+                    locale
+            );
+
+            sendHtmlEmail(to, subject, htmlContent);
             log.info("Welcome email sent successfully to: {}", to);
+
         } catch (Exception e) {
             log.error("Failed to send welcome email to: {}", to, e);
-            throw new RuntimeException("Không thể gửi email chào mừng", e);
+            throw new RuntimeException(
+                    messageSource.getMessage("email.send.error", null, LocaleContextHolder.getLocale()),
+                    e
+            );
         }
     }
 
@@ -58,62 +108,98 @@ public class EmailServiceImpl implements EmailService {
     @Async
     public void sendResetPasswordEmail(String to, String resetToken) {
         try {
-            SimpleMailMessage message = createBaseMessage(to);
-            message.setSubject("Yêu cầu đặt lại mật khẩu");
-            message.setText(buildResetPasswordEmailContent(resetToken));
+            Locale locale = LocaleContextHolder.getLocale();
 
-            mailSender.send(message);
+            Context context = new Context(locale);
+            context.setVariable("recipientName", extractNameFromEmail(to));
+            context.setVariable("resetToken", resetToken);
+            context.setVariable("resetUrl", frontendUrl + "/reset-password?token=" + resetToken);
+            context.setVariable("appName", appName);
+            context.setVariable("frontendUrl", frontendUrl);
+            context.setVariable("expiryMinutes", 15);
+
+            String htmlContent = templateEngine.process("emails/reset-password", context);
+
+            String subject = messageSource.getMessage(
+                    "email.reset.subject",
+                    null,
+                    locale
+            );
+
+            sendHtmlEmail(to, subject, htmlContent);
             log.info("Reset password email sent successfully to: {}", to);
+
         } catch (Exception e) {
             log.error("Failed to send reset password email to: {}", to, e);
-            throw new RuntimeException("Không thể gửi email đặt lại mật khẩu", e);
+            throw new RuntimeException(
+                    messageSource.getMessage("email.send.error", null, LocaleContextHolder.getLocale()),
+                    e
+            );
         }
     }
 
-    // Private helper methods
+    /**
+     * Send HTML email with proper encoding
+     */
+    private void sendHtmlEmail(String to, String subject, String htmlContent) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-    private SimpleMailMessage createBaseMessage(String to) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromEmail);
-        message.setTo(to);
-        return message;
+        helper.setFrom(fromEmail);
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true); // true = isHtml
+
+        mailSender.send(message);
     }
 
-    private String buildOtpEmailContent(String otp) {
-        return String.format(
-                "Xin chào,\n\n" +
-                        "Mã OTP của bạn là: %s\n\n" +
-                        "Mã này có hiệu lực trong 5 phút.\n\n" +
-                        "Nếu bạn không yêu cầu đăng ký tài khoản, vui lòng bỏ qua email này.\n\n" +
-                        "Trân trọng,\n" +
-                        "Đội ngũ %s",
-                otp, appName
-        );
+    /**
+     * Extract name from email for personalization
+     */
+    private String extractNameFromEmail(String email) {
+        if (email == null || !email.contains("@")) {
+            return "Bạn";
+        }
+
+        try {
+            String localPart = email.substring(0, email.indexOf("@"));
+
+            // Convert dots and underscores to spaces and capitalize
+            String name = localPart.replace(".", " ").replace("_", " ");
+
+            // Capitalize first letter of each word
+            return capitalizeWords(name);
+
+        } catch (Exception e) {
+            log.warn("Error extracting name from email: {}", email, e);
+            return "Bạn";
+        }
     }
 
-    private String buildWelcomeEmailContent(String fullName) {
-        return String.format(
-                "Xin chào %s,\n\n" +
-                        "Chào mừng bạn đến với %s!\n\n" +
-                        "Tài khoản của bạn đã được kích hoạt thành công. " +
-                        "Bạn có thể bắt đầu sử dụng dịch vụ của chúng tôi ngay bây giờ.\n\n" +
-                        "Nếu bạn có bất kỳ câu hỏi nào, đừng ngần ngại liên hệ với chúng tôi.\n\n" +
-                        "Trân trọng,\n" +
-                        "Đội ngũ %s",
-                fullName, appName, appName
-        );
-    }
+    /**
+     * Capitalize first letter of each word
+     */
+    private String capitalizeWords(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return "Bạn";
+        }
 
-    private String buildResetPasswordEmailContent(String resetToken) {
-        return String.format(
-                "Xin chào,\n\n" +
-                        "Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.\n\n" +
-                        "Mã xác nhận: %s\n\n" +
-                        "Mã này có hiệu lực trong 15 phút.\n\n" +
-                        "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.\n\n" +
-                        "Trân trọng,\n" +
-                        "Đội ngũ %s",
-                resetToken, appName
-        );
+        String[] words = text.toLowerCase().trim().split("\\s+");
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < words.length; i++) {
+            String word = words[i];
+            if (!word.isEmpty()) {
+                result.append(Character.toUpperCase(word.charAt(0)));
+                if (word.length() > 1) {
+                    result.append(word.substring(1));
+                }
+            }
+            if (i < words.length - 1) {
+                result.append(" ");
+            }
+        }
+
+        return result.toString().isEmpty() ? "Bạn" : result.toString();
     }
 }
