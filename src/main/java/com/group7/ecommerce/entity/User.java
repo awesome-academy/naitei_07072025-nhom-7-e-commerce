@@ -1,15 +1,20 @@
 package com.group7.ecommerce.entity;
 
+import com.group7.ecommerce.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "users")
 public class User {
 
@@ -42,8 +47,7 @@ public class User {
     private String address;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "ENUM('user','admin') DEFAULT 'user'")
-    private Role role = Role.user;
+    private Role role = Role.USER;
 
     @Column(name = "is_active", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isActive = false;
@@ -75,18 +79,5 @@ public class User {
     private boolean emailVerified = false;
     private String verificationToken;
 
-    public enum Role {
-        user, admin
-    }
-
-    // Constructors
-    public User() {}
-
-    public User(String email, String fullName, String phone, String password) {
-        this.email = email;
-        this.fullName = fullName;
-        this.phone = phone;
-        this.password = password;
-    }
 }
 
