@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/admin_layout :: html}"> 
+
+<div th:fragment="content"> 
+    <h2 class="mb-4">Danh sách Đơn hàng</h2>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover table-striped">
+                <thead class="table-dark">
+                <tr>
+                    <th>Tên khách hàng</th>
+                    <th>Trạng thái</th>
+                    <th>Phương thức thanh toán</th>
+                    <th>Ngày đặt hàng</th>
+                    <th class="text-end">Tổng tiền</th>
+                    <th class="text-center">Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="order : ${orders}">
+                    <td th:text="${order.customerName}">Nguyễn Văn A</td>
+                    <td>
+                        <span th:text="${order.status}"
+                              th:classappend="${order.status.name() == 'PENDING' ? 'badge bg-warning' : 
+                                               order.status.name() == 'DELIVERED' ? 'badge bg-success' : 
+                                               order.status.name() == 'CANCELLED' ? 'badge bg-danger' : 'badge bg-secondary'}">
+                        </span>
+                    </td>
+                    <td th:text="${order.paymentMethod}">COD</td>
+                    <td th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')} + ' ₫'"></td>
+                    <td class="text-center">
+                        <a th:href="@{/admin/orders/detail/{id}(id=${order.id})}" class="btn btn-sm btn-info" title="Xem chi tiết">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a th:href="@{/admin/orders/update/{id}(id=${order.id})}" class="btn btn-sm btn-warning" title="Cập nhật">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div> 
+
+</html>
