@@ -3,19 +3,49 @@
       th:replace="~{layouts/admin_layout :: html}"> 
 
 <div th:fragment="content"> 
-    <h2 class="mb-4">Danh sách Đơn hàng</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Danh sách Đơn hàng</h2>
+    </div>
 
-    <div class="card">
+	<div class="card filter-card"> 
         <div class="card-body">
-            <table class="table table-hover table-striped">
+            <h5 class="card-title">Bộ lọc tìm kiếm</h5>
+            <form th:action="@{/admin/orders}" method="get" class="filter-form">
+                <div class="form-group">
+                    <label for="customerName" class="form-label">Tên khách hàng</label>
+                    <input type="text" class="form-control" id="customerName" name="customerName" 
+                           th:value="${currentCustomerName}" placeholder="Nhập tên khách hàng...">
+                </div>
+                <div class="form-group">
+                    <label for="status" class="form-label">Trạng thái</label>
+                    <select id="status" name="status" class="form-select">
+                        <option value="">-- Chọn tất cả --</option>
+                        <option th:each="st : ${allStatuses}"
+                                th:value="${st}"
+                                th:text="${st}"
+                                th:selected="${st == currentStatus}">
+                        </option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Lọc</button>
+                    <a th:href="@{/admin/orders}" class="btn btn-secondary"><i class="fas fa-times"></i> Xóa</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card data-table-card">
+        <div class="card-body">
+            <table class="table table-hover data-table">
                 <thead class="table-dark">
                 <tr>
                     <th>Tên khách hàng</th>
                     <th>Trạng thái</th>
                     <th>Phương thức thanh toán</th>
                     <th>Ngày đặt hàng</th>
-                    <th class="text-end">Tổng tiền</th>
-                    <th class="text-center">Hành động</th>
+                    <th class="col-total-amount">Tổng tiền</th>
+                    <th class="col-actions">Hành động</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -30,8 +60,8 @@
                     </td>
                     <td th:text="${order.paymentMethod}">COD</td>
                     <td th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></td>
-                    <td class="text-end" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')} + ' ₫'"></td>
-                    <td class="text-center">
+                    <td class="col-total-amount" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')} + ' ₫'"></td>
+                    <td class="col-actions">
                         <a th:href="@{/admin/orders/detail/{id}(id=${order.id})}" class="btn btn-sm btn-info" title="Xem chi tiết">
                             <i class="fas fa-eye"></i>
                         </a>
@@ -45,5 +75,4 @@
         </div>
     </div>
 </div> 
-
 </html>
