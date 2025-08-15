@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/admin_layout :: html}"> 
+
+<div th:fragment="content"> 
+    <h2 class="mb-4">Dashboard</h2>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Tổng số đơn hàng</div>
+                <div class="card-body">
+                    <h2 class="card-title" th:text="${totalOrders}">150</h2>
+                    <!-- stretched-link làm cho cả card có thể click được -->
+                    <a th:href="@{/admin/orders}" class="text-white stretched-link">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+             <div class="card text-white bg-success mb-3">
+                <div class="card-header">Tổng số sản phẩm</div>
+                <div class="card-body">
+                    <h2 class="card-title" th:text="${totalProducts}">78</h2>
+                    <a href="#" class="text-white stretched-link">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+             <div class="card text-white bg-danger mb-3">
+                <div class="card-header">Tổng số người dùng</div>
+                <div class="card-body">
+                    <h2 class="card-title" th:text="${totalUsers}">124</h2>
+                    <a href="#" class="text-white stretched-link">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>
