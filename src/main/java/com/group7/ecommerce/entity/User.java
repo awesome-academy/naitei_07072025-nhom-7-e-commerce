@@ -4,12 +4,15 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Data
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "users")
 public class User {
 
@@ -78,15 +81,4 @@ public class User {
     public enum Role {
         user, admin
     }
-
-    // Constructors
-    public User() {}
-
-    public User(String email, String fullName, String phone, String password) {
-        this.email = email;
-        this.fullName = fullName;
-        this.phone = phone;
-        this.password = password;
-    }
 }
-
