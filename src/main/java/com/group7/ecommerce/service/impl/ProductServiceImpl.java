@@ -1,12 +1,17 @@
 package com.group7.ecommerce.service.impl;
 
+import com.group7.ecommerce.dto.request.ProductDto;
 import com.group7.ecommerce.entity.Category;
 import com.group7.ecommerce.entity.Product;
+import com.group7.ecommerce.entity.ProductImage;
 import com.group7.ecommerce.repository.CategoryRepository;
+import com.group7.ecommerce.repository.ProductImageRepository;
 import com.group7.ecommerce.repository.ProductRepository;
 import com.group7.ecommerce.service.FileStorageService;
 import com.group7.ecommerce.service.ProductService;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -17,14 +22,20 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.*;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
+    private final Validator validator;
     private final FileStorageService fileStorageService;
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductImageRepository productImageRepository;
 
     @Override
     @Transactional
@@ -41,44 +52,80 @@ public class ProductServiceImpl implements ProductService {
                     Row row = sheet.getRow(i);
                     if (row == null) continue;
 
-                    String name = getCellString(row.getCell(0));
-                    String description = getCellString(row.getCell(1));
-                    BigDecimal importPrice = getBigDecimalFromCell(row.getCell(2));
-                    BigDecimal sellingPrice = getBigDecimalFromCell(row.getCell(3));
-                    int stockQuantity = getIntFromCell(row.getCell(4));
-                    long categoryId = getLongFromCell(row.getCell(5));
+                    // Map dữ liệu từ Excel sang DTO
+                    ProductDto dto = new ProductDto();
+                    dto.setName(getCellString(row.getCell(0)));
+                    dto.setDescription(getCellString(row.getCell(1)));
+                    dto.setImportPrice(getBigDecimalFromCell(row.getCell(2)));
+                    dto.setSellingPrice(getBigDecimalFromCell(row.getCell(3)));
+                    dto.setStockQuantity(getIntFromCell(row.getCell(4)));
+                    dto.setCategoryId(getLongFromCell(row.getCell(5)));
+
                     String imageFileName = getCellString(row.getCell(6));
-                    boolean isFeatured = getBooleanFromCell(row.getCell(7));
+                    List<String> imageList = Arrays.stream(imageFileName.split(","))
+                            .map(String::trim)
+                            .filter(s -> !s.isEmpty())
+                            .collect(Collectors.toList());
+                    dto.setImageUrls(imageList);
 
-                    Category category = categoryRepository.findById(categoryId)
-                            .orElseThrow(() -> new RuntimeException("Category không tồn tại: " + categoryId));
+                    dto.setFeatured(getBooleanFromCell(row.getCell(7)));
+                    dto.setDeleted(getBooleanFromCell(row.getCell(8)));
 
-                    // Copy ảnh vào static
-                    String fileNameOnly = imageFileName.replace("\\", "/");
-                    fileNameOnly = fileNameOnly.substring(fileNameOnly.lastIndexOf('/') + 1);
-                    Path sourceImage = imageDir.resolve(imageFileName);
-                    if (Files.exists(sourceImage)) {
-                        fileStorageService.copyImageToStatic(sourceImage.toString(), fileNameOnly);
+                    // Validate DTO
+                    Set<ConstraintViolation<ProductDto>> violations = validator.validate(dto);
+                    if (!violations.isEmpty()) {
+                        String errors = violations.stream()
+                                .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                                .collect(Collectors.joining(", "));
+                        throw new RuntimeException("Lỗi dữ liệu dòng " + (i+1) + ": " + errors);
                     }
 
+                    Category category = categoryRepository.findById(dto.getCategoryId())
+                            .orElseThrow(() -> new RuntimeException("Category không tồn tại: " + dto.getCategoryId()));
+
+                    // Copy ảnh vào static
+                    for (String img : dto.getImageUrls()) {
+                        String fileNameOnly = img.replace("\\", "/");
+                        fileNameOnly = fileNameOnly.substring(fileNameOnly.lastIndexOf('/') + 1);
+                        Path sourceImage = imageDir.resolve(img);
+                        if (Files.exists(sourceImage)) {
+                            fileStorageService.copyImageToStatic(sourceImage.toString(), fileNameOnly);
+                        } else {
+                            throw new RuntimeException(
+                                    "Không tìm thấy ảnh: " + img + " cho sản phẩm ở dòng " + (i + 1)
+                            );
+                        }
+                    }
+
+                    // Tạo Product
                     Product product = Product.builder()
-                            .name(name)
-                            .description(description)
-                            .importPrice(importPrice)
-                            .sellingPrice(sellingPrice)
-                            .stockQuantity(stockQuantity)
+                            .name(dto.getName())
+                            .description(dto.getDescription())
+                            .importPrice(dto.getImportPrice())
+                            .sellingPrice(dto.getSellingPrice())
+                            .stockQuantity(dto.getStockQuantity())
                             .category(category)
-                            .imageUrl("images/" + fileNameOnly)
-                            .isFeatured(isFeatured)
+                            .isFeatured(dto.isFeatured())
+                            .isDeleted(dto.isDeleted())
                             .createdAt(LocalDateTime.now())
                             .updatedAt(LocalDateTime.now())
                             .build();
-
                     productRepository.save(product);
+
+                    // Thêm ảnh của sản phẩm
+                    boolean first = true;
+                    for (String img : dto.getImageUrls()) {
+                        ProductImage productImage = new ProductImage();
+                        productImage.setProduct(product);
+                        productImage.setImageUrl(img);
+                        productImage.setPrimary(first);
+                        first = false;
+                        productImageRepository.save(productImage);
+                    }
                 }
             }
 
-            // Xóa temp
+            // Xóa thư mục temp
             fileStorageService.deleteDirectoryRecursively(Path.of("temp"));
 
         } catch (Exception e) {
