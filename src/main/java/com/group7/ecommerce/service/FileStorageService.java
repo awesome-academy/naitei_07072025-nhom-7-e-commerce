@@ -7,6 +7,9 @@ import java.nio.file.Path;
 
 public interface FileStorageService {
     Path unzipImages(MultipartFile zipFile);
-    void copyImageToStatic(String sourcePath, String imageName) throws IOException;
+    String copyImageToStatic(String sourcePath, String imageName) throws IOException;
     void deleteDirectoryRecursively(Path path) throws IOException;
+    String copyImageToStatic(MultipartFile file) throws IOException;
+    void deleteImage(String imageUrl) throws IOException;
+    boolean isValidImageFile(String fileName);
 }
