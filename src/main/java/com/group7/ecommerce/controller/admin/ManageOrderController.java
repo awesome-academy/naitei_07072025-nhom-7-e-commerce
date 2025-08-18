@@ -4,14 +4,13 @@ import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
+import com.group7.ecommerce.dto.request.UpdateOrderStatusDto;
 import com.group7.ecommerce.dto.response.OrderDetailResp;
 import com.group7.ecommerce.dto.response.OrderSummaryResp;
 import com.group7.ecommerce.enums.OrderStatus;
+import com.group7.ecommerce.repository.ReasonRepository;
 import com.group7.ecommerce.service.OrderService;
 
 @Controller
@@ -19,9 +18,11 @@ import com.group7.ecommerce.service.OrderService;
 public class ManageOrderController {
 
 	private final OrderService orderService;
+	private final ReasonRepository reasonRepository;
 
-	public ManageOrderController(OrderService orderService) {
+	public ManageOrderController(OrderService orderService, ReasonRepository reasonRepository) {
 		this.orderService = orderService;
+		this.reasonRepository = reasonRepository;
 	}
 
 	@GetMapping()
@@ -38,9 +39,10 @@ public class ManageOrderController {
 		model.addAttribute("currentStatus", status);
 
 		model.addAttribute("allStatuses", OrderStatus.values());
+
+		model.addAttribute("allReasons", reasonRepository.findAll());
 		return "admin/orders/index";
 	}
-
 	@GetMapping("/{id}")
 	public String showOrderDetailPage(@PathVariable("id") Integer orderId, Model model) {
 		OrderDetailResp order = orderService.getOrderDetailById(orderId);
@@ -48,6 +50,18 @@ public class ManageOrderController {
 		model.addAttribute("order", order);
 		model.addAttribute("activePage", "orders");
 
+		model.addAttribute("allReasons", reasonRepository.findAll());
+
 		return "admin/orders/detail";
+	}
+
+	@PostMapping("/update-status/{id}")
+	public String handleUpdateStatus(
+			@PathVariable("id") Integer orderId,
+			@ModelAttribute UpdateOrderStatusDto request) {
+
+		orderService.updateOrderStatus(orderId, request);
+
+		return "redirect:/admin/orders/" + orderId;
 	}
 }
