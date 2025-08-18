@@ -62,7 +62,7 @@
                     <td th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></td>
                     <td class="col-total-amount" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')} + ' ₫'"></td>
                     <td class="col-actions">
-                        <a th:href="@{/admin/orders/detail/{id}(id=${order.id})}" class="btn btn-sm btn-info" title="Xem chi tiết">
+                        <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn btn-sm btn-info" title="Xem chi tiết">
                             <i class="fas fa-eye"></i>
                         </a>
                         <a th:href="@{/admin/orders/update/{id}(id=${order.id})}" class="btn btn-sm btn-warning" title="Cập nhật">

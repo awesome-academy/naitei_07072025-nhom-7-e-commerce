@@ -5,24 +5,26 @@ import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.group7.ecommerce.dto.response.OrderDetailResp;
 import com.group7.ecommerce.dto.response.OrderSummaryResp;
 import com.group7.ecommerce.enums.OrderStatus;
 import com.group7.ecommerce.service.OrderService;
 
 @Controller
-@RequestMapping("/admin")
-public class OrderController {
+@RequestMapping("/admin/orders")
+public class ManageOrderController {
 
 	private final OrderService orderService;
 
-	public OrderController(OrderService orderService) {
+	public ManageOrderController(OrderService orderService) {
 		this.orderService = orderService;
 	}
 
-	@GetMapping("/orders")
+	@GetMapping()
 	public String index(
 			@RequestParam(name = "customerName", required = false) String customerName,
 			@RequestParam(name = "status", required = false) OrderStatus status,
@@ -37,5 +39,15 @@ public class OrderController {
 
 		model.addAttribute("allStatuses", OrderStatus.values());
 		return "admin/orders/index";
+	}
+
+	@GetMapping("/{id}")
+	public String showOrderDetailPage(@PathVariable("id") Integer orderId, Model model) {
+		OrderDetailResp order = orderService.getOrderDetailById(orderId);
+
+		model.addAttribute("order", order);
+		model.addAttribute("activePage", "orders");
+
+		return "admin/orders/detail";
 	}
 }
