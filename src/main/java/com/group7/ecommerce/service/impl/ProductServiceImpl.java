@@ -3,6 +3,7 @@ package com.group7.ecommerce.service.impl;
 import com.group7.ecommerce.dto.request.ProductDto;
 import com.group7.ecommerce.dto.request.ProductUpdateDto;
 import com.group7.ecommerce.entity.Category;
+import com.group7.ecommerce.dto.response.ProductListItemResponse;
 import com.group7.ecommerce.entity.Product;
 import com.group7.ecommerce.entity.ProductImage;
 import com.group7.ecommerce.mapper.ProductMapper;
@@ -17,6 +18,8 @@ import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -251,5 +254,10 @@ public class ProductServiceImpl implements ProductService {
         if (cell == null) return false;
         if (cell.getCellType() == CellType.BOOLEAN) return cell.getBooleanCellValue();
         return Boolean.parseBoolean(cell.toString().trim());
+    }
+
+    @Override
+    public Page<ProductListItemResponse> getAllProducts(Pageable pageable) {
+        return productRepository.findAllActiveProducts(pageable);
     }
 }
