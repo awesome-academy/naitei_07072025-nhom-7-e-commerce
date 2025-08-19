@@ -1,10 +1,12 @@
 package com.group7.ecommerce.utils.validator;
 
+import com.group7.ecommerce.dto.request.LoginDto;
 import com.group7.ecommerce.entity.User;
 import com.group7.ecommerce.repository.UserRepository;
 import com.group7.ecommerce.utils.constant.message.ErrorMessages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
@@ -37,4 +39,17 @@ public class UserValidator {
             throw new IllegalArgumentException(ErrorMessages.OTP_INVALID);
         }
     }
+
+    public void validateLoginCredentials(LoginDto loginDto) {
+        if (loginDto == null) {
+            throw new IllegalArgumentException(ErrorMessages.LOGIN_DATA_NULL);
+        }
+    }
+
+    public void validateUserAccountActive(User user) {
+        if (!user.isEmailVerified()) {
+            throw new IllegalArgumentException(ErrorMessages.EMAIL_NOT_VERIFIED);
+        }
+    }
+
 }

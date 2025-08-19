@@ -1,7 +1,9 @@
 package com.group7.ecommerce.service;
 
+import com.group7.ecommerce.dto.request.LoginDto;
 import com.group7.ecommerce.dto.request.UserRegistrationDto;
 import com.group7.ecommerce.dto.request.VerifyOtpDto;
+import com.group7.ecommerce.dto.response.JwtResponse;
 
 public interface UserService {
 
@@ -25,4 +27,11 @@ public interface UserService {
      * @return thông báo kết quả
      */
     String resendOtp(String email);
+
+    /**
+     * Đăng nhập
+     * @param loginDto email cần gửi lại OTP
+     * @return JWT response chứa token và thông tin user
+     */
+    JwtResponse authenticateUser(LoginDto loginDto);
 }

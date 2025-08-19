@@ -1,5 +1,6 @@
 package com.group7.ecommerce.entity;
 
+import com.group7.ecommerce.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -45,8 +46,7 @@ public class User {
     private String address;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "ENUM('user','admin') DEFAULT 'user'")
-    private Role role = Role.user;
+    private Role role = Role.USER;
 
     @Column(name = "is_active", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isActive = false;
@@ -77,8 +77,4 @@ public class User {
 
     private boolean emailVerified = false;
     private String verificationToken;
-
-    public enum Role {
-        user, admin
-    }
 }

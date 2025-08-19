@@ -23,3 +23,4 @@ public interface EmailService {
      */
     void sendResetPasswordEmail(String to, String resetToken);
 }
+

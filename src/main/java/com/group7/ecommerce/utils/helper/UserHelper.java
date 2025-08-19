@@ -1,5 +1,6 @@
 package com.group7.ecommerce.utils.helper;
 
+import com.group7.ecommerce.enums.Role;
 import com.group7.ecommerce.utils.constant.UserConstants;
 import com.group7.ecommerce.utils.constant.message.ErrorMessages;
 import com.group7.ecommerce.dto.request.UserRegistrationDto;
@@ -7,6 +8,7 @@ import com.group7.ecommerce.entity.User;
 import com.group7.ecommerce.repository.UserRepository;
 import com.group7.ecommerce.service.EmailService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +43,7 @@ public class UserHelper {
                 .phone(dto.getPhone())
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .emailVerified(false)
+                .role(Role.USER)
                 .verificationToken(otp)
                 .tokenExpiry(LocalDateTime.now().plusMinutes(UserConstants.OTP_EXPIRY_MINUTES))
                 .build();
@@ -93,5 +96,13 @@ public class UserHelper {
         Random random = new Random();
         int otp = 100000 + random.nextInt(900000);
         return String.valueOf(otp);
+    }
+
+    /**
+     * Tìm kiếm Email hoặc email
+     */
+    public User findUserByEmailOrUsernameOrThrow(String emailOrUsername) {
+        return userRepository.findByEmailOrUsername(emailOrUsername, emailOrUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found after authentication"));
     }
 }
