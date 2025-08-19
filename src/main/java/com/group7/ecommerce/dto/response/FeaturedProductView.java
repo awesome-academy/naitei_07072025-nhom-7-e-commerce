@@ -6,3 +6,4 @@ public interface FeaturedProductView {
     Product getProduct();
     Long getTotalSold();
 }
+

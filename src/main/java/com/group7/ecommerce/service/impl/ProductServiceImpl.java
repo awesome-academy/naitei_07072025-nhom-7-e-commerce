@@ -4,6 +4,7 @@ import com.group7.ecommerce.dto.request.ProductDto;
 import com.group7.ecommerce.dto.request.ProductUpdateDto;
 import com.group7.ecommerce.dto.response.ProductResponse;
 import com.group7.ecommerce.entity.Category;
+import com.group7.ecommerce.dto.response.ProductListItemResponse;
 import com.group7.ecommerce.entity.Product;
 import com.group7.ecommerce.entity.ProductImage;
 import com.group7.ecommerce.mapper.ProductMapper;
@@ -279,5 +280,10 @@ public class ProductServiceImpl implements ProductService {
         if (cell == null) return false;
         if (cell.getCellType() == CellType.BOOLEAN) return cell.getBooleanCellValue();
         return Boolean.parseBoolean(cell.toString().trim());
+    }
+
+    @Override
+    public Page<ProductListItemResponse> getAllProducts(Pageable pageable) {
+        return productRepository.findAllActiveProducts(pageable);
     }
 }
