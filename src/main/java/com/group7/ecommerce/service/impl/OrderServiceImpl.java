@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import com.group7.ecommerce.dto.request.OrderRequestItem;
 import com.group7.ecommerce.entity.*;
 import com.group7.ecommerce.enums.OrderStatus;
+import com.group7.ecommerce.exception.ResourceNotFoundException;
 import com.group7.ecommerce.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +27,6 @@ import com.group7.ecommerce.dto.response.OrderSummaryResp;
 import com.group7.ecommerce.entity.Order;
 import com.group7.ecommerce.entity.OrderItem;
 import com.group7.ecommerce.entity.Reason;
-import com.group7.ecommerce.enums.OrderStatus;
-import com.group7.ecommerce.exception.GlobalExceptionHandler.ResourceNotFoundException;
 import com.group7.ecommerce.repository.OrderRepository;
 import com.group7.ecommerce.repository.ReasonRepository;
 import com.group7.ecommerce.service.OrderService;
@@ -226,7 +225,7 @@ public class OrderServiceImpl implements OrderService {
 				order.getUser().getEmail(),
 				order.getUser().getPhone(),
 				order.getShipInfo().getAddress(),
-				order.getShipInfo().getReciever(),
+				order.getShipInfo().getReceiver(),
 				reasonText,
 				order.getReasonDetailed(),
 				itemDTOs

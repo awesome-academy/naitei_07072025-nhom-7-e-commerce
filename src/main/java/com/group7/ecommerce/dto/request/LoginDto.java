@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginDto {
-    @NotBlank(message = "Email hoặc username không được để trống")
+    @NotBlank(message = "{emailOrUsername.notblank}")
     private String emailOrUsername;
 
-    @NotBlank(message = "Mật khẩu không được để trống")
+    @NotBlank(message = "{password.notblank}")
     private String password;
 
 }

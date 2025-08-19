@@ -6,28 +6,29 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public record ProductDto(
-        @NotBlank(message = "Tên sản phẩm không được để trống")
+        @NotBlank(message = "{product.name.notblank}")
         String name,
 
         String description,
 
-        @NotNull(message = "Giá nhập không được để trống")
-        @DecimalMin(value = "0.0", inclusive = false, message = "Giá nhập phải > 0")
+        @NotNull(message = "{product.importPrice.notnull}")
+        @DecimalMin(value = "0.0", inclusive = false, message = "{product.importPrice.min}")
         BigDecimal importPrice,
 
-        @NotNull(message = "Giá bán không được để trống")
-        @DecimalMin(value = "0.0", inclusive = false, message = "Giá bán phải > 0")
+        @NotNull(message = "{product.sellingPrice.notnull}")
+        @DecimalMin(value = "0.0", inclusive = false, message = "{product.sellingPrice.min}")
         BigDecimal sellingPrice,
 
-        @Min(value = 0, message = "Số lượng phải >= 0")
+        @Min(value = 0, message = "{product.stockQuantity.min}")
         int stockQuantity,
 
-        @NotNull(message = "Danh mục không được để trống")
+        @NotNull(message = "{product.categoryId.notnull}")
         Long categoryId,
 
-        @NotEmpty(message = "Phải có ít nhất 1 ảnh")
+        @NotEmpty(message = "{product.imageUrls.notempty}")
         List<String> imageUrls,
 
         boolean isFeatured,
         boolean isDeleted
 ) { }
+

@@ -1,13 +1,14 @@
 package com.group7.ecommerce.repository;
 
-import java.util.Optional;
-
+import com.group7.ecommerce.entity.ShipInfo;
+import com.group7.ecommerce.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.group7.ecommerce.entity.Order;
+import java.util.List;
+import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Integer>, JpaSpecificationExecutor<Order> {
 	@Query("""
@@ -20,4 +21,5 @@ public interface OrderRepository extends JpaRepository<Order, Integer>, JpaSpeci
 			WHERE o.id = :id
 			""")
 	Optional<Order> findDetailsById(@Param("id") Integer id);
+    List<Order> findByUserIdAndShipInfo(Integer userId, ShipInfo shipInfo);
 }
