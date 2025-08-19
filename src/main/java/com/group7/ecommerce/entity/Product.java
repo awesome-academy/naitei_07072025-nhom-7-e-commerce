@@ -41,11 +41,11 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @Column(name = "image_url", length = 255)
-    private String imageUrl;
-
     @Column(name = "is_featured", nullable = false)
     private boolean isFeatured = false;
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
