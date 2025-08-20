@@ -1,4 +1,4 @@
-package com.group7.ecommerce.controller;
+package com.group7.ecommerce.controller.api;
 
 import com.group7.ecommerce.dto.request.LoginDto;
 import com.group7.ecommerce.dto.request.UserRegistrationDto;
