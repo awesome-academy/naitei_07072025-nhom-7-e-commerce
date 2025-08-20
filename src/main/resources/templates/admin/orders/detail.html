@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/admin_layout :: html}">
+
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0" th:text="'Chi tiết đơn hàng #' + ${order.id}"></h2>
+            <p class="text-muted mb-0" th:text="'Ngày đặt: ' + ${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></p>
+        </div>
+        <a th:href="@{/admin/orders}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i> Quay lại danh sách</a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header"><h5>Sản phẩm trong đơn</h5></div>
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <tbody>
+                            <tr th:each="item : ${order.items}">
+                                <td class="align-middle" th:text="${item.productName}"></td>
+                                <td class="align-middle text-center" th:text="'SL: ' + ${item.quantity}"></td>
+                                <td class="align-middle text-end" th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer d-flex justify-content-end">
+                    <h4>Tổng tiền: <span class="fw-bold text-primary" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span></h4>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h5>Thông tin thanh toán & Trạng thái</h5></div>
+                <div class="card-body">
+                    <p><strong>Phương thức:</strong> <span th:text="${order.paymentMethod}"></span></p>
+                    <p><strong>Trạng thái:</strong> <span class="badge" th:text="${order.status}" th:classappend="${'bg-' + (order.status.name() == 'PENDING' ? 'warning' : 'success')}"></span></p>
+                    <div th:if="${order.cancelReason != null or order.adminNote != null}">
+                        <hr>
+                        <p class="text-danger mb-1" th:if="${order.cancelReason}"><strong>Lý do hủy/từ chối:</strong> <span th:text="${order.cancelReason}"></span></p>
+                        <p class="text-muted" th:if="${order.adminNote}"><strong>Ghi chú của Admin:</strong> <span th:text="${order.adminNote}"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header"><h5>Thông tin khách hàng & Giao hàng</h5></div>
+                <div class="card-body">
+                    <h6 class="card-title">Khách hàng</h6>
+                    <p class="mb-1"><i class="fas fa-user fa-fw me-2"></i><span th:text="${order.customerName}"></span></p>
+                    <p class="mb-1"><i class="fas fa-envelope fa-fw me-2"></i><span th:text="${order.customerEmail}"></span></p>
+                    <p class="mb-3"><i class="fas fa-phone fa-fw me-2"></i><span th:text="${order.customerPhone}"></span></p>
+                    <hr>
+                    <h6 class="card-title mt-3">Thông tin giao hàng</h6>
+                    <p class="mb-1"><strong>Người nhận:</strong> <span th:text="${order.shippingReceiver}"></span></p>
+                    <p th:text="${order.shippingAddress}"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

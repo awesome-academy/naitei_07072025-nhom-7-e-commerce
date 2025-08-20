@@ -8,9 +8,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.group7.ecommerce.dto.response.OrderDetailResp;
+import com.group7.ecommerce.dto.response.OrderItemResp;
 import com.group7.ecommerce.dto.response.OrderSummaryResp;
 import com.group7.ecommerce.entity.Order;
+import com.group7.ecommerce.entity.OrderItem;
 import com.group7.ecommerce.enums.OrderStatus;
+import com.group7.ecommerce.exception.GlobalExceptionHandler.ResourceNotFoundException;
 import com.group7.ecommerce.repository.OrderRepository;
 import com.group7.ecommerce.service.OrderService;
 
@@ -21,6 +25,14 @@ public class OrderServiceImpl implements OrderService {
 
 	public OrderServiceImpl(OrderRepository orderRepository) {
 		this.orderRepository = orderRepository;
+	}
+
+	@Override
+	public OrderDetailResp getOrderDetailById(Integer orderId) {
+		Order order = orderRepository.findDetailsById(orderId)
+				.orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+
+		return mapOrderToDetailDTO(order);
 	}
 
 	@Override
@@ -64,6 +76,38 @@ public class OrderServiceImpl implements OrderService {
 				order.getPaymentMethod(),
 				order.getCreatedAt(),
 				order.getTotalAmount()
+				);
+	}
+
+	private OrderDetailResp mapOrderToDetailDTO(Order order) {
+		List<OrderItemResp> itemDTOs = order.getOrderItems().stream()
+				.map(this::mapOrderItemToDTO)
+				.collect(Collectors.toList());
+
+		String reasonText = (order.getReason() != null) ? order.getReason().getDescription() : null;
+
+		return new OrderDetailResp(
+				order.getId(),
+				order.getCreatedAt(),
+				order.getStatus(),
+				order.getPaymentMethod(),
+				order.getTotalAmount(),
+				order.getUser().getFullName(),
+				order.getUser().getEmail(),
+				order.getUser().getPhone(),
+				order.getShipInfo().getAddress(),
+				order.getShipInfo().getReciever(),
+				reasonText,
+				order.getReasonDetailed(),
+				itemDTOs
+				);
+	}
+
+	private OrderItemResp mapOrderItemToDTO(OrderItem orderItem) {
+		return new OrderItemResp(
+				orderItem.getProduct().getName(),
+				orderItem.getQuantity(),
+				orderItem.getPrice()
 				);
 	}
 }
