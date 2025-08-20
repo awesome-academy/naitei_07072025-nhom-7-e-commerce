@@ -27,7 +27,7 @@ import com.group7.ecommerce.entity.Order;
 import com.group7.ecommerce.entity.OrderItem;
 import com.group7.ecommerce.entity.Reason;
 import com.group7.ecommerce.enums.OrderStatus;
-import com.group7.ecommerce.exception.GlobalExceptionHandler.ResourceNotFoundException;
+import com.group7.ecommerce.exception.ResourceNotFoundException;
 import com.group7.ecommerce.repository.OrderRepository;
 import com.group7.ecommerce.repository.ReasonRepository;
 import com.group7.ecommerce.service.OrderService;

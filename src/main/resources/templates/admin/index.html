@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragment/head :: head}">
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+  <!-- Header -->
+  <header th:replace="~{fragment/header :: header}"></header>
+
+  <!-- Sidebar -->
+  <div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+  <!-- Content Wrapper - THÊM PHẦN NÀY -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>
+        Dashboard
+        <small>Control panel</small>
+      </h1>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <!-- Nội dung trang sẽ được thêm ở đây -->
+      <div class="row">
+        <div class="col-md-12">
+          <!-- Content của từng trang -->
+        </div>
+      </div>
+    </section>
+  </div>
+
+</div>
+
+<div th:replace="~{fragment/script :: script}"></div>
+</body>
+</html>

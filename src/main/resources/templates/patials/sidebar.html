@@ -1,0 +1,252 @@
+<div th:fragment="sidebar" xmlns:th="http://www.thymeleaf.org">
+  <aside class="main-sidebar" style="position: fixed; top: 50px; height: calc(100vh - 50px); overflow-y: auto;">
+    <!-- sidebar: style can be found in sidebar.less -->
+    <section class="sidebar">
+      <!-- Sidebar user panel -->
+      <div class="user-panel">
+        <div class="pull-left image">
+          <img th:src="@{/images/user2-160x160.jpg}" class="img-circle" alt="User Image"
+               onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMzYzhhZmYiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTIgMTRDOS4zMyAxMiA0IDE3LjMzIDQgMThWMjBIMTZWMThDMTYgMTcuMzMgMTQuNjcgMTYgMTIgMTRaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPC9zdmc+Cg=='">
+        </div>
+        <div class="pull-left info">
+          <p>Alexander Pierce</p>
+          <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+        </div>
+      </div>
+
+      <!-- Search form -->
+      <form action="#" method="get" class="sidebar-form">
+        <div class="input-group">
+          <input type="text" name="q" class="form-control" placeholder="Tìm kiếm...">
+          <span class="input-group-btn">
+            <button type="submit" name="search" id="search-btn" class="btn btn-flat">
+              <i class="fa fa-search"></i>
+            </button>
+          </span>
+        </div>
+      </form>
+
+      <!-- sidebar menu: style can be found in sidebar.less -->
+      <ul class="sidebar-menu" data-widget="tree">
+        <li class="header">ĐIỀU HƯỚNG CHÍNH</li>
+
+        <!-- Dashboard -->
+        <li class="active">
+          <a href="/admin/home">
+            <i class="fa fa-dashboard"></i>
+            <span>Trang chủ</span>
+          </a>
+        </li>
+
+        <!-- Search -->
+        <li>
+          <a href="/admin/search">
+            <i class="fa fa-search"></i>
+            <span>Tìm kiếm</span>
+          </a>
+        </li>
+
+        <!-- Statistics -->
+        <li>
+          <a href="/admin/statistic">
+            <i class="fa fa-bar-chart-o"></i>
+            <span>Thống kê</span>
+          </a>
+        </li>
+
+        <li class="header">QUẢN LÝ</li>
+
+        <!-- Customers -->
+        <li class="treeview">
+          <a href="#">
+            <i class="fa fa-users"></i>
+            <span>Khách hàng</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li><a href="/customers"><i class="fa fa-circle-o"></i> Danh sách khách hàng</a></li>
+            <li><a href="/customers/add"><i class="fa fa-circle-o"></i> Thêm khách hàng</a></li>
+            <li><a href="/customers/vip"><i class="fa fa-circle-o"></i> Khách hàng VIP</a></li>
+          </ul>
+        </li>
+
+        <!-- Products -->
+        <li class="treeview">
+          <a href="#">
+            <i class="fa fa-cubes"></i>
+            <span>Sản phẩm</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li><a href="/products"><i class="fa fa-circle-o"></i> Danh sách sản phẩm</a></li>
+            <li><a href="/products/add"><i class="fa fa-circle-o"></i> Thêm sản phẩm</a></li>
+            <li><a href="/products/categories"><i class="fa fa-circle-o"></i> Danh mục</a></li>
+            <li><a href="/products/inventory"><i class="fa fa-circle-o"></i> Kiểm kê kho</a></li>
+          </ul>
+        </li>
+
+        <!-- Suppliers -->
+        <li class="treeview">
+          <a href="#">
+            <i class="fa fa-truck"></i>
+            <span>Nhà cung cấp</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li><a href="/suppliers"><i class="fa fa-circle-o"></i> Danh sách NCC</a></li>
+            <li><a href="/suppliers/add"><i class="fa fa-circle-o"></i> Thêm NCC</a></li>
+            <li><a href="/suppliers/contracts"><i class="fa fa-circle-o"></i> Hợp đồng</a></li>
+          </ul>
+        </li>
+
+        <!-- Orders -->
+        <li class="treeview">
+          <a href="#">
+            <i class="fa fa-shopping-cart"></i>
+            <span>Đơn hàng</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+              <small class="label pull-right bg-red">3</small>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li><a href="/orders"><i class="fa fa-circle-o"></i> Tất cả đơn hàng</a></li>
+            <li><a href="/orders/pending"><i class="fa fa-circle-o"></i> Chờ xử lý</a></li>
+            <li><a href="/orders/processing"><i class="fa fa-circle-o"></i> Đang xử lý</a></li>
+            <li><a href="/orders/completed"><i class="fa fa-circle-o"></i> Hoàn thành</a></li>
+            <li><a href="/orders/cancelled"><i class="fa fa-circle-o"></i> Đã hủy</a></li>
+          </ul>
+        </li>
+
+        <!-- Employees -->
+        <li class="treeview">
+          <a href="#">
+            <i class="fa fa-user-tie"></i>
+            <span>Nhân viên</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li><a href="/employees"><i class="fa fa-circle-o"></i> Danh sách nhân viên</a></li>
+            <li><a href="/employees/add"><i class="fa fa-circle-o"></i> Thêm nhân viên</a></li>
+            <li><a href="/employees/roles"><i class="fa fa-circle-o"></i> Phân quyền</a></li>
+            <li><a href="/employees/attendance"><i class="fa fa-circle-o"></i> Chấm công</a></li>
+          </ul>
+        </li>
+
+        <li class="header">BÁO CÁO & PHÂN TÍCH</li>
+
+        <!-- Reports -->
+        <li class="treeview">
+          <a href="#">
+            <i class="fa fa-pie-chart"></i>
+            <span>Báo cáo</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li><a href="/reports/sales"><i class="fa fa-circle-o"></i> Báo cáo bán hàng</a></li>
+            <li><a href="/reports/inventory"><i class="fa fa-circle-o"></i> Báo cáo tồn kho</a></li>
+            <li><a href="/reports/financial"><i class="fa fa-circle-o"></i> Báo cáo tài chính</a></li>
+            <li><a href="/reports/customers"><i class="fa fa-circle-o"></i> Phân tích khách hàng</a></li>
+          </ul>
+        </li>
+
+        <li class="header">CÀI ĐẶT</li>
+
+        <!-- Settings -->
+        <li class="treeview">
+          <a href="#">
+            <i class="fa fa-gear"></i>
+            <span>Cài đặt</span>
+            <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+          </a>
+          <ul class="treeview-menu">
+            <li><a href="/settings/general"><i class="fa fa-circle-o"></i> Cài đặt chung</a></li>
+            <li><a href="/settings/store"><i class="fa fa-circle-o"></i> Thông tin cửa hàng</a></li>
+            <li><a href="/settings/notifications"><i class="fa fa-circle-o"></i> Thông báo</a></li>
+            <li><a href="/settings/backup"><i class="fa fa-circle-o"></i> Sao lưu dữ liệu</a></li>
+          </ul>
+        </li>
+
+        <!-- Logout -->
+        <li>
+          <a href="/logout" onclick="return confirm('Bạn có chắc chắn muốn đăng xuất?')">
+            <i class="fa fa-sign-out"></i>
+            <span>Đăng xuất</span>
+          </a>
+        </li>
+      </ul>
+    </section>
+    <!-- /.sidebar -->
+  </aside>
+</div>
+
+<style>
+  /* Custom styles for sidebar */
+  .main-sidebar .sidebar-menu > li.header {
+      color: #4b646f;
+      background: #1e282c;
+      border-left: 3px solid #3c8dbc;
+      font-weight: 600;
+  }
+
+  .main-sidebar .sidebar-menu > li.active > a {
+      background-color: #3c8dbc;
+      border-left: 3px solid #1e282c;
+  }
+
+  .main-sidebar .sidebar-menu > li > a {
+      transition: all 0.3s ease;
+  }
+
+  .main-sidebar .sidebar-menu > li > a:hover {
+      background-color: #2c3b41;
+      border-left: 3px solid #3c8dbc;
+  }
+
+  .main-sidebar .sidebar-menu .treeview-menu > li > a:hover {
+      background-color: #2c3b41;
+      color: #fff;
+  }
+
+  /* Fix cho responsive */
+  @media (max-width: 767px) {
+      .main-sidebar {
+          transform: translate(-230px, 0);
+          transition: transform 0.3s ease-in-out;
+      }
+
+      .sidebar-open .main-sidebar {
+          transform: translate(0, 0);
+      }
+  }
+
+  /* Scrollbar styling */
+  .main-sidebar::-webkit-scrollbar {
+      width: 6px;
+  }
+
+  .main-sidebar::-webkit-scrollbar-track {
+      background: #1e282c;
+  }
+
+  .main-sidebar::-webkit-scrollbar-thumb {
+      background: #3c8dbc;
+      border-radius: 3px;
+  }
+
+  .main-sidebar::-webkit-scrollbar-thumb:hover {
+      background: #2980b9;
+  }
+</style>

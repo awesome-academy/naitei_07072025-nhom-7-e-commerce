@@ -1,0 +1,104 @@
+<div th:fragment="script" xmlns:th="http://www.thymeleaf.org">
+  <!-- jQuery PHẢI LOAD TRƯỚC TẤT CẢ -->
+  <script src="/js/jquery.min.js"></script>
+
+  <!-- jQuery UI -->
+  <script src="/js/jquery-ui.js"></script>
+
+  <!-- Bootstrap JS -->
+  <script src="/js/bootstrap.min.js"></script>
+
+  <!-- AdminLTE JS -->
+  <script src="/js/adminlte.min.js"></script>
+
+  <!-- Custom JS files -->
+  <script src="/js/dashboard.js"></script>
+  <script src="/js/function.js"></script>
+
+  <!-- Search Product Function -->
+  <script>
+    function searchProduct() {
+        const query = document.getElementById('searchInput').value.trim();
+        const type = document.getElementById('searchType').value;
+
+        if (query === "") {
+            alert("Vui lòng nhập từ khóa tìm kiếm.");
+            return;
+        }
+
+        const isId = !isNaN(query);
+        const numericId = parseInt(query);
+
+        if (type === "products") {
+            if (isId) {
+                window.location.href = `/products/ID/${numericId}`;
+            } else {
+                window.location.href = `/products/search?name=${encodeURIComponent(query)}`;
+            }
+        } else if (type === "customers") {
+            if (isId) {
+                window.location.href = `/customers/ID/${numericId}`;
+            } else {
+                window.location.href = `/customers/search?name=${encodeURIComponent(query)}`;
+            }
+        } else if (type === "orders") {
+            if (isId) {
+                window.location.href = `/orders/ID/${numericId}`;
+            } else {
+                window.location.href = `/orders/search?name=${encodeURIComponent(query)}`;
+            }
+        } else if (type === "suppliers") {
+            if (isId) {
+                window.location.href = `/suppliers/ID/${numericId}`;
+            } else {
+                window.location.href = `/suppliers/search?name=${encodeURIComponent(query)}`;
+            }
+        }
+    }
+  </script>
+
+  <!-- Category Search Function -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchButton = document.getElementById('searchButton');
+        const categoryInput = document.getElementById('searchInputByCategory');
+        const minPriceInput = document.getElementById('searchMinValue');
+        const maxPriceInput = document.getElementById('searchMaxValue');
+
+        if (searchButton) {
+            searchButton.addEventListener('click', function() {
+                const category = categoryInput.value.trim();
+                const minPrice = minPriceInput.value.trim();
+                const maxPrice = maxPriceInput.value.trim();
+
+                if (category && minPrice && maxPrice) {
+                    window.location.href = `/admin/searchcatalogprice?category=${encodeURIComponent(category)}&minPrice=${minPrice}&maxPrice=${maxPrice}&showTable=true`;
+                } else {
+                    alert('Vui lòng nhập đầy đủ thông tin');
+                }
+            });
+        }
+    });
+  </script>
+
+  <!-- FIX NAVBAR LAYOUT -->
+  <script>
+    $(document).ready(function() {
+        // Ensure navbar dropdowns work properly
+        $('.dropdown-toggle').dropdown();
+
+        // Fix navbar menu alignment
+        $('.navbar-custom-menu .nav').css({
+            'display': 'flex',
+            'flex-direction': 'row',
+            'align-items': 'center'
+        });
+
+        // Fix individual menu items
+        $('.navbar-custom-menu .nav > li').css({
+            'display': 'inline-block',
+            'float': 'left'
+        });
+    });
+  </script>
+</div>
