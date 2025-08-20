@@ -49,12 +49,23 @@ spring.mail.password=password
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
 
-spring.servlet.multipart.max-file-size=100MB
-spring.servlet.multipart.max-request-size=100MB
-
 # ===============================================
 # JWT configuration
 # ===============================================
 
 app.jwtSecret=myVerySecretKeyThatIsAtLeast32CharactersLongForSecurityPurposes
 app.jwtExpirationMs=timeExpirated (86400000)
+
+# ===============================================
+# File upload configuration
+# ===============================================
+
+spring.servlet.multipart.max-file-size=100MB
+spring.servlet.multipart.max-request-size=100MB
+
+# ===============================================
+# Valid image extensions
+# ===============================================
+
+app.valid-image-extensions=.jpg,.jpeg,.png,.gif,.bmp,.webp
+

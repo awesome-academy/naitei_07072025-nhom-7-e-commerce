@@ -59,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/product").hasAuthority("ADMIN")
                         .requestMatchers("/api/order").hasAnyAuthority("USER","ADMIN")
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 );
         http.authenticationProvider(authenticationProvider());
