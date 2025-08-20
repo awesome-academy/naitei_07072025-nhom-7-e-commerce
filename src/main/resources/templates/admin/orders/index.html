@@ -65,14 +65,66 @@
                         <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn btn-sm btn-info" title="Xem chi tiết">
                             <i class="fas fa-eye"></i>
                         </a>
-                        <a th:href="@{/admin/orders/update/{id}(id=${order.id})}" class="btn btn-sm btn-warning" title="Cập nhật">
-                            <i class="fas fa-edit"></i>
-                        </a>
+                        <button type="button" class="btn btn-sm btn-warning" title="Cập nhật trạng thái"
+        					data-bs-toggle="modal" th:data-bs-target="'#updateStatusModal-' + ${order.id}">
+    						<i class="fas fa-edit"></i>
+						</button>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
     </div>
-</div> 
+    
+    <div th:fragment="modals">
+	    <div th:each="order : ${orders}">
+	        <div class="modal fade" th:id="'updateStatusModal-' + ${order.id}" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+	            <div class="modal-dialog">
+	                <div class="modal-content">
+	                    <form th:action="@{/admin/orders/update-status/{id}(id=${order.id})}" method="post">
+	                        <div class="modal-header">
+	                            <h5 class="modal-title" id="updateStatusModalLabel" th:text="'Cập nhật đơn hàng #' + ${order.id}"></h5>
+	                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	                        </div>
+	                        <div class="modal-body">
+	                            <p><strong>Khách hàng:</strong> <span th:text="${order.customerName}"></span></p>
+	                            <p><strong>Trạng thái hiện tại:</strong> <span class="badge bg-info" th:text="${order.status}"></span></p>
+	                            <hr>
+	                            <div class="mb-3">
+	                                <label for="newStatus" class="form-label">Chọn trạng thái mới</label>
+	                                <select id="newStatus" name="newStatus" class="form-select status-selector" th:attr="data-order-id=${order.id}">
+	                                    <option th:each="statusValue : ${T(com.group7.ecommerce.enums.OrderStatus).values()}"
+	                                            th:value="${statusValue}"
+	                                            th:text="${statusValue}"
+	                                            th:selected="${statusValue == order.status}">
+	                                    </option>
+	                                </select>
+	                            </div>
+	                            <div class="d-none reason-block">
+		                            <div class="mb-3">
+		                                <label class="form-label">Chọn lý do</label>
+		                                <select name="reasonId" class="form-select">
+		                                    <option value="">-- Không chọn --</option>
+		                                    <option th:each="reason : ${allReasons}"
+		                                            th:value="${reason.id}"
+		                                            th:text="${reason.description}"></option>
+		                                </select>
+		                            </div>
+		                            <div class="mb-3">
+		                                <label class="form-label">Ghi chú chi tiết (tùy chọn)</label>
+		                                <textarea name="adminNote" class="form-control" rows="3"></textarea>
+		                            </div>
+		                        </div>
+	                        </div>
+	                        <div class="modal-footer">
+	                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+	                            <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Lưu thay đổi</button>
+	                        </div>
+	                    </form>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+</div>
 </html>
