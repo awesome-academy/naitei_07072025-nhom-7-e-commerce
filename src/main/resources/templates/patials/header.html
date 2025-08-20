@@ -1,0 +1,208 @@
+<header class="main-header" th:fragment="header" xmlns:th="http://www.thymeleaf.org"
+        style="position: fixed; top: 0; left: 0; right: 0; z-index: 1030;">
+  <!-- Logo -->
+  <a href="/" class="logo">
+    <!-- mini logo for sidebar mini 50x50 pixels -->
+    <span class="logo-mini"><b>S</b>S</span>
+    <!-- logo for regular state and mobile devices -->
+    <span class="logo-lg"><b>Samsung</b>Store</span>
+  </a>
+
+  <!-- Header Navbar: style can be found in header.less -->
+  <nav class="navbar navbar-static-top">
+    <!-- Sidebar toggle button-->
+    <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </a>
+
+    <div class="navbar-custom-menu">
+      <ul class="nav navbar-nav">
+        <!-- Messages: style can be found in dropdown.less-->
+        <li class="dropdown messages-menu">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            <i class="fa fa-envelope-o"></i>
+            <span class="label label-success">4</span>
+          </a>
+          <ul class="dropdown-menu">
+            <li class="header">Bạn có 4 tin nhắn</li>
+            <li>
+              <!-- inner menu: contains the actual data -->
+              <ul class="menu">
+                <li><!-- start message -->
+                  <a href="#">
+                    <div class="pull-left">
+                      <img th:src="@{/images/user3-128x128.jpg}"
+                           class="img-circle"
+                           alt="User Image"
+                           onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<i class=\'fa fa-user-circle fa-3x text-gray\'></i>');">
+                    </div>
+
+                    <h4>
+                      Đội hỗ trợ
+                      <small><i class="fa fa-clock-o"></i> 5 phút</small>
+                    </h4>
+                    <p>Chào bạn! Có điều gì cần hỗ trợ không?</p>
+                  </a>
+                </li>
+                <!-- end message -->
+                <li>
+                  <a href="#">
+                    <div class="pull-left">
+                      <img th:src="@{/images/user3-128x128.jpg}"
+                           class="img-circle"
+                           alt="User Image"
+                           onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<i class=\'fa fa-user-circle fa-3x text-gray\'></i>');">
+                    </div>
+
+                    <h4>
+                      Khách hàng VIP
+                      <small><i class="fa fa-clock-o"></i> 2 giờ</small>
+                    </h4>
+                    <p>Cảm ơn dịch vụ tuyệt vời!</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="footer"><a href="#">Xem tất cả tin nhắn</a></li>
+          </ul>
+        </li>
+
+        <!-- Notifications: style can be found in dropdown.less -->
+        <li class="dropdown notifications-menu">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            <i class="fa fa-bell-o"></i>
+            <span class="label label-warning">10</span>
+          </a>
+          <ul class="dropdown-menu">
+            <li class="header">Bạn có 10 thông báo</li>
+            <li>
+              <!-- inner menu: contains the actual data -->
+              <ul class="menu">
+                <li>
+                  <a href="#">
+                    <i class="fa fa-users text-aqua"></i> 5 thành viên mới đã tham gia hôm nay
+                  </a>
+                </li>
+                <li>
+                  <a href="#">
+                    <i class="fa fa-shopping-cart text-green"></i> 3 đơn hàng mới cần xử lý
+                  </a>
+                </li>
+                <li>
+                  <a href="#">
+                    <i class="fa fa-warning text-yellow"></i> Sản phẩm Galaxy S24 sắp hết hàng
+                  </a>
+                </li>
+                <li>
+                  <a href="#">
+                    <i class="fa fa-truck text-red"></i> Nhà cung cấp ABC đã giao hàng
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="footer"><a href="#">Xem tất cả</a></li>
+          </ul>
+        </li>
+
+        <!-- Tasks: style can be found in dropdown.less -->
+        <li class="dropdown tasks-menu">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            <i class="fa fa-flag-o"></i>
+            <span class="label label-danger">3</span>
+          </a>
+          <ul class="dropdown-menu">
+            <li class="header">Bạn có 3 nhiệm vụ</li>
+            <li>
+              <!-- inner menu: contains the actual data -->
+              <ul class="menu">
+                <li><!-- Task item -->
+                  <a href="#">
+                    <h3>
+                      Cập nhật giá sản phẩm
+                      <small class="pull-right">80%</small>
+                    </h3>
+                    <div class="progress xs">
+                      <div class="progress-bar progress-bar-aqua" style="width: 80%" role="progressbar"
+                           aria-valuenow="80" aria-valuemin="0" aria-valuemax="100">
+                        <span class="sr-only">80% Complete</span>
+                      </div>
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a href="#">
+                    <h3>
+                      Kiểm tra kho hàng
+                      <small class="pull-right">45%</small>
+                    </h3>
+                    <div class="progress xs">
+                      <div class="progress-bar progress-bar-green" style="width: 45%" role="progressbar"
+                           aria-valuenow="45" aria-valuemin="0" aria-valuemax="100">
+                        <span class="sr-only">45% Complete</span>
+                      </div>
+                    </div>
+                  </a>
+                </li>
+                <!-- end task item -->
+              </ul>
+            </li>
+            <li class="footer">
+              <a href="#">Xem tất cả nhiệm vụ</a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- User Account: style can be found in dropdown.less -->
+        <li class="dropdown user user-menu">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            <img th:src="@{/images/user3-128x128.jpg}"
+                 class="img-circle"
+                 alt="User Image"
+                 onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<i class=\'fa fa-user-circle fa-3x text-gray\'></i>');">
+            <span class="hidden-xs">Alexander Pierce</span>
+          </a>
+          <ul class="dropdown-menu">
+            <!-- User image -->
+            <li class="user-header">
+              <img th:src="@{/images/user3-128x128.jpg}"
+                   class="img-circle"
+                   alt="User Image"
+                   onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<i class=\'fa fa-user-circle fa-3x text-gray\'></i>');">
+              <p>
+                Alexander Pierce - Quản lý cửa hàng
+                <small>Thành viên từ tháng 11, 2022</small>
+              </p>
+            </li>
+            <!-- Menu Body -->
+            <li class="user-body">
+              <div class="row">
+                <div class="col-xs-4 text-center">
+                  <a href="#">Theo dõi</a>
+                </div>
+                <div class="col-xs-4 text-center">
+                  <a href="#">Bán hàng</a>
+                </div>
+                <div class="col-xs-4 text-center">
+                  <a href="#">Bạn bè</a>
+                </div>
+              </div>
+              <!-- /.row -->
+            </li>
+            <!-- Menu Footer-->
+            <li class="user-footer">
+              <div class="pull-left">
+                <a href="/profile" class="btn btn-default btn-flat">Hồ sơ</a>
+              </div>
+              <div class="pull-right">
+                <a href="/logout" class="btn btn-default btn-flat">Đăng xuất</a>
+              </div>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</header>
