@@ -36,7 +36,6 @@ public class EmailServiceImpl implements EmailService {
     private String frontendUrl;
 
     @Override
-    @Async
     public void sendOtpEmail(String to, String otp) {
         try {
             Locale locale = LocaleContextHolder.getLocale();
@@ -201,5 +200,73 @@ public class EmailServiceImpl implements EmailService {
         }
 
         return result.toString().isEmpty() ? "Bạn" : result.toString();
+    }
+
+
+    // Test email
+    @Override
+    public void sendTestEmail(String to) {
+        try {
+            log.info("=== DEBUG EMAIL TEST ===");
+            log.info("From Email: {}", fromEmail);
+            log.info("To Email: {}", to);
+            log.info("App Name: {}", appName);
+            log.info("Frontend URL: {}", frontendUrl);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject("Test Email - " + System.currentTimeMillis());
+            helper.setText("<h1>Test Email</h1><p>If you receive this, email is working!</p>", true);
+
+            log.info("Attempting to send email...");
+            mailSender.send(message);
+            log.info("✅ Test email sent successfully to: {}", to);
+
+        } catch (Exception e) {
+            log.error("❌ Failed to send test email to: {}", to, e);
+            throw new RuntimeException("Test email failed", e);
+        }
+    }
+
+    // Và method OTP với debug
+    @Override
+    @Async
+    public void sendOtpEmailWithDebug(String to, String otp) {
+        log.info("=== DEBUG OTP EMAIL ===");
+        log.info("Recipient: {}", to);
+        log.info("OTP: {}", otp);
+        log.info("From Email: {}", fromEmail);
+
+        try {
+            // Thử gửi email đơn giản trước
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject("OTP Debug - " + appName);
+
+            String simpleHtml = String.format("""
+            <div style="font-family: Arial, sans-serif;">
+                <h2>Mã OTP Debug</h2>
+                <p>Email: %s</p>
+                <p>OTP: <strong>%s</strong></p>
+                <p>Thời gian: %s</p>
+            </div>
+            """, to, otp, java.time.LocalDateTime.now());
+
+            helper.setText(simpleHtml, true);
+
+            log.info("Sending debug OTP email...");
+            mailSender.send(message);
+            log.info("✅ Debug OTP email sent successfully!");
+
+        } catch (Exception e) {
+            log.error("❌ Debug OTP email failed: {}", e.getMessage(), e);
+            throw new RuntimeException("Debug OTP email failed", e);
+        }
     }
 }

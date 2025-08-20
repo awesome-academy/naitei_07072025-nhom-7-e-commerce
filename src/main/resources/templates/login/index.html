@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragment/head :: head}">
+    <title>Login</title>
+    <style>
+        body.login-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+
+        .login-box {
+            width: 400px;
+            margin: 7% auto;
+        }
+
+        .login-logo {
+            font-size: 35px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .login-logo a {
+            color: #fff;
+            text-decoration: none;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .login-logo a:hover {
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            transform: scale(1.05);
+        }
+
+        .login-box-body {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .login-box-msg {
+            margin: 0 0 30px 0;
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+            font-weight: 300;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-control {
+            height: 50px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            padding-left: 50px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .form-control-feedback {
+            position: absolute;
+            top: 50%;
+            left: 18px;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 18px;
+            z-index: 3;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            height: 50px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .checkbox {
+            margin-top: 15px;
+        }
+
+        .checkbox label {
+            font-weight: normal;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .social-auth-links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .social-auth-links a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+
+        .text-danger {
+            color: #ff4b2b !important;
+            font-size: 14px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .row {
+            margin-top: 30px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .login-box {
+                width: 90%;
+                margin: 5% auto;
+            }
+
+            .login-box-body {
+                padding: 30px 20px;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-box {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        /* iCheck custom styling */
+        .icheckbox_square-blue {
+            background-position: 0 0;
+            background-image: none !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+        }
+
+        .icheckbox_square-blue.checked {
+            background-position: -20px 0;
+        }
+    </style>
+</head>
+<body class="login-page">
+<div class="container">
+    <div class="login-box">
+        <div class="login-logo">
+            <a href="#"><b>Admin</b>Panel</a>
+        </div>
+
+        <div class="login-box-body">
+            <p class="login-box-msg">Welcome back! Please sign in to your account</p>
+
+            <!-- Success Message -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="fa fa-check-circle"></i>
+                <span th:text="${successMessage}"></span>
+            </div>
+
+            <!-- Error Message -->
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="fa fa-exclamation-triangle"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <form th:action="@{/admin/login}" th:object="${loginDto}" method="post">
+                <div class="form-group has-feedback">
+                    <input type="text"
+                           th:field="*{emailOrUsername}"
+                           class="form-control"
+                           placeholder="Enter your email or username"
+                           required>
+                    <span class="fa fa-user form-control-feedback"></span>
+                    <span th:if="${#fields.hasErrors('emailOrUsername')}"
+                          th:errors="*{emailOrUsername}"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="form-group has-feedback">
+                    <input type="password"
+                           th:field="*{password}"
+                           class="form-control"
+                           placeholder="Enter your password"
+                           required>
+                    <span class="fa fa-lock form-control-feedback"></span>
+                    <span th:if="${#fields.hasErrors('password')}"
+                          th:errors="*{password}"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-8">
+                        <div class="checkbox icheck" style="margin-left: -15px">
+                            <label>
+                                <input type="checkbox"> Remember me
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <button type="submit" class="btn btn-primary btn-block btn-flat">
+                            <i class="fa fa-sign-in"></i> Sign In
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="social-auth-links text-center" style="margin-top: 20px;">
+                <a href="#" class="text-center">
+                    <i class="fa fa-question-circle"></i> Forgot your password?
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.3/icheck.min.js"></script>
+<script>
+    $(function () {
+        // Initialize iCheck
+        $('input[type="checkbox"]').iCheck({
+            checkboxClass: 'icheckbox_square-blue',
+            radioClass: 'iradio_square-blue',
+            increaseArea: '20%'
+        });
+
+        // Form validation effects
+        $('.form-control').on('focus', function() {
+            $(this).parent().addClass('focused');
+        });
+
+        $('.form-control').on('blur', function() {
+            if ($(this).val() === '') {
+                $(this).parent().removeClass('focused');
+            }
+        });
+
+        // Auto dismiss alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+    });
+</script>
+</body>
+</html>

@@ -22,5 +22,9 @@ public interface EmailService {
      * @param resetToken token reset password
      */
     void sendResetPasswordEmail(String to, String resetToken);
+
+    //Test email
+    void sendTestEmail(String to);
+    void sendOtpEmailWithDebug(String to, String otp);
 }
 

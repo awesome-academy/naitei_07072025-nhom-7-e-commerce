@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to <span th:text="${appName}">E-Commerce</span></title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        .header .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .welcome-message {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .welcome-message h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        .welcome-message p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #666666;
+        }
+        .features {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+        .features h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            color: #555555;
+            position: relative;
+            padding-left: 25px;
+        }
+        .feature-list li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        .cta-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: 500;
+            font-size: 16px;
+            transition: transform 0.2s ease;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .footer p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .footer .support-info {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #34495e;
+        }
+        .social-links {
+            margin: 20px 0;
+        }
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #bdc3c7;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        .social-links a:hover {
+            color: white;
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 0 10px;
+            }
+            .header, .content, .footer {
+                padding: 20px 15px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .welcome-message h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div class="icon">🎉</div>
+        <h1>Chào mừng đến với <span th:text="${appName}">E-Commerce</span>!</h1>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Welcome Message -->
+        <div class="welcome-message">
+            <h2>Xin chào <span th:text="${recipientName}">Bạn</span>!</h2>
+            <p>
+                Cảm ơn bạn đã đăng ký tài khoản với chúng tôi.
+                Tài khoản của bạn đã được tạo thành công và bạn có thể bắt đầu khám phá các tính năng tuyệt vời của chúng tôi.
+            </p>
+        </div>
+
+        <!-- Features Section -->
+        <div class="features">
+            <h3>🚀 Những gì bạn có thể làm:</h3>
+            <ul class="feature-list">
+                <li>Duyệt và mua sắm hàng ngàn sản phẩm chất lượng</li>
+                <li>Theo dõi đơn hàng và lịch sử mua sắm</li>
+                <li>Nhận thông báo về khuyến mãi và sản phẩm mới</li>
+                <li>Quản lý thông tin cá nhân và địa chỉ giao hàng</li>
+                <li>Hỗ trợ khách hàng 24/7</li>
+            </ul>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="cta-section">
+            <a th:href="${dashboardUrl}" class="cta-button">
+                🛍️ Bắt đầu mua sắm ngay
+            </a>
+        </div>
+
+        <!-- Tips Section -->
+        <div style="background-color: #e8f5e8; border-left: 4px solid #28a745; padding: 20px; margin: 30px 0; border-radius: 4px;">
+            <h4 style="margin: 0 0 10px 0; color: #155724;">💡 Mẹo nhỏ:</h4>
+            <p style="margin: 0; color: #155724; font-size: 14px;">
+                Đừng quên kiểm tra email thường xuyên để không bỏ lỡ các ưu đãi đặc biệt dành riêng cho bạn!
+            </p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p><strong><span th:text="${appName}">E-Commerce</span></strong></p>
+        <p>Nền tảng mua sắm trực tuyến hàng đầu</p>
+
+        <div class="social-links">
+            <a href="#" title="Facebook">📘</a>
+            <a href="#" title="Instagram">📷</a>
+            <a href="#" title="Twitter">🐦</a>
+            <a href="#" title="YouTube">📺</a>
+        </div>
+
+        <div class="support-info">
+            <p><strong>Cần hỗ trợ?</strong></p>
+            <p>Email: <a th:href="'mailto:' + ${supportEmail}" th:text="${supportEmail}" style="color: #bdc3c7;">support@ecommerce.com</a></p>
+            <p>Website: <a th:href="${frontendUrl}" th:text="${frontendUrl}" style="color: #bdc3c7;">Website</a></p>
+        </div>
+
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #34495e; font-size: 12px; color: #95a5a6;">
+            <p>Email này được gửi đến bạn vì bạn đã đăng ký tài khoản tại <span th:text="${appName}">E-Commerce</span>.</p>
+            <p>&copy; 2024 <span th:text="${appName}">E-Commerce</span>. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

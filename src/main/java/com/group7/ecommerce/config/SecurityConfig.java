@@ -59,8 +59,9 @@ public class SecurityConfig {
 						).permitAll()
 				.requestMatchers("/api/product").hasAuthority("ADMIN")
 				.requestMatchers("/api/order").hasAnyAuthority("USER","ADMIN")
-				.requestMatchers("/css/**", "/js/**", "/images/**", "/webfonts/**").permitAll()
-				.requestMatchers("/admin/**").permitAll()
+				.requestMatchers("/css/**", "/js/**", "/images/**", "/webfonts/**","/fonts/**").permitAll()
+				.requestMatchers("/admin/**","/test/**").permitAll()
+						.requestMatchers("/suppliers/**").permitAll()
 				.anyRequest().authenticated()
 				);
 		http.authenticationProvider(authenticationProvider());
@@ -74,4 +75,3 @@ public class SecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 }
-

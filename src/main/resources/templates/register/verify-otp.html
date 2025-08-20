@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragment/head :: head}">
+    <title>OTP Verification</title>
+</head>
+<body class="hold-transition register-page">
+<div class="container">
+    <div class="register-box">
+        <div class="register-logo">
+            <a href="#"><b>Admin</b>LTE</a>
+        </div>
+
+        <div class="register-box-body">
+            <p class="login-box-msg">Verify Your Email</p>
+
+            <!-- Info Message -->
+            <div class="alert alert-info">
+                <i class="fa fa-envelope"></i>
+                We've sent a 6-digit verification code to <strong th:text="${email}">your email</strong>
+            </div>
+
+            <!-- Success Message -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <span th:text="${successMessage}"></span>
+            </div>
+
+            <!-- Error Message -->
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <!-- OTP Verification Form -->
+            <form th:action="@{/admin/verify-otp}" method="post" id="otpForm">
+                <input type="hidden" name="email" th:value="${email}">
+
+                <div class="form-group">
+                    <label>Enter 6-digit verification code:</label>
+                    <div class="otp-input-container" style="display: flex; justify-content: space-between; margin: 15px 0;">
+                        <input type="text" class="otp-input form-control" maxlength="1" style="width: 45px; height: 45px; text-align: center; font-size: 18px; font-weight: bold;">
+                        <input type="text" class="otp-input form-control" maxlength="1" style="width: 45px; height: 45px; text-align: center; font-size: 18px; font-weight: bold;">
+                        <input type="text" class="otp-input form-control" maxlength="1" style="width: 45px; height: 45px; text-align: center; font-size: 18px; font-weight: bold;">
+                        <input type="text" class="otp-input form-control" maxlength="1" style="width: 45px; height: 45px; text-align: center; font-size: 18px; font-weight: bold;">
+                        <input type="text" class="otp-input form-control" maxlength="1" style="width: 45px; height: 45px; text-align: center; font-size: 18px; font-weight: bold;">
+                        <input type="text" class="otp-input form-control" maxlength="1" style="width: 45px; height: 45px; text-align: center; font-size: 18px; font-weight: bold;">
+                    </div>
+                    <input type="hidden" name="otp" id="combinedOtp">
+                </div>
+
+                <!-- Countdown Timer -->
+                <div class="text-center" style="margin: 20px 0;">
+                    <div id="countdown" class="text-muted" style="font-size: 14px;">
+                        <i class="fa fa-clock-o"></i> Code expires in: <span id="timer">05:00</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col-xs-6">
+                        <button type="button" id="resendBtn" class="btn btn-default btn-block" disabled>
+                            <i class="fa fa-refresh"></i> Resend Code
+                        </button>
+                    </div>
+                    <div class="col-xs-6">
+                        <button type="submit" class="btn btn-primary btn-block" id="verifyBtn" disabled>
+                            <i class="fa fa-check"></i> Verify
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Help Text -->
+                <div class="text-center" style="margin-top: 20px;">
+                    <p class="text-muted" style="font-size: 12px;">
+                        <i class="fa fa-info-circle"></i>
+                        Didn't receive the code? Check your spam folder or click resend.
+                    </p>
+                    <a th:href="@{/admin/register}" class="text-center">
+                        <i class="fa fa-arrow-left"></i> Back to Registration
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // OTP Input Handling
+        $('.otp-input').on('input', function() {
+            var value = $(this).val();
+
+            // Only allow numbers
+            if (!/^\d$/.test(value)) {
+                $(this).val('');
+                return;
+            }
+
+            // Move to next input
+            if (value.length === 1) {
+                $(this).next('.otp-input').focus();
+            }
+
+            // Combine all OTP values
+            var combinedOtp = '';
+            $('.otp-input').each(function() {
+                combinedOtp += $(this).val();
+            });
+            $('#combinedOtp').val(combinedOtp);
+
+            // Enable verify button if all 6 digits entered
+            if (combinedOtp.length === 6) {
+                $('#verifyBtn').prop('disabled', false);
+            } else {
+                $('#verifyBtn').prop('disabled', true);
+            }
+        });
+
+        // Backspace handling
+        $('.otp-input').on('keydown', function(e) {
+            if (e.keyCode === 8 && $(this).val() === '') {
+                $(this).prev('.otp-input').focus();
+            }
+        });
+
+        // Paste handling
+        $('.otp-input').first().on('paste', function(e) {
+            e.preventDefault();
+            var pastedData = e.originalEvent.clipboardData.getData('text').replace(/\D/g, '');
+
+            if (pastedData.length === 6) {
+                for (var i = 0; i < 6; i++) {
+                    $('.otp-input').eq(i).val(pastedData[i] || '');
+                }
+                $('#combinedOtp').val(pastedData);
+                $('#verifyBtn').prop('disabled', false);
+            }
+        });
+
+        // Countdown Timer (5 minutes = 300 seconds)
+        var timeLeft = 300;
+
+        function updateTimer() {
+            var minutes = Math.floor(timeLeft / 60);
+            var seconds = timeLeft % 60;
+            $('#timer').text(
+                (minutes < 10 ? '0' : '') + minutes + ':' +
+                (seconds < 10 ? '0' : '') + seconds
+            );
+
+            if (timeLeft <= 0) {
+                $('#countdown').html('<span class="text-danger"><i class="fa fa-exclamation-triangle"></i> Code has expired</span>');
+                $('#verifyBtn').prop('disabled', true);
+                $('#resendBtn').prop('disabled', false).removeClass('btn-default').addClass('btn-warning');
+                return;
+            }
+
+            timeLeft--;
+            setTimeout(updateTimer, 1000);
+        }
+
+        updateTimer();
+
+        // Resend OTP
+        $('#resendBtn').on('click', function() {
+            var btn = $(this);
+            btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Sending...');
+
+            $.post('/admin/resend-otp', { email: $('input[name="email"]').val() })
+            .done(function(response) {
+                // Reset timer
+                timeLeft = 300;
+                $('#countdown').html('<i class="fa fa-clock-o"></i> Code expires in: <span id="timer">05:00</span>');
+                updateTimer();
+
+                // Clear OTP inputs
+                $('.otp-input').val('');
+                $('#combinedOtp').val('');
+                $('#verifyBtn').prop('disabled', true);
+
+                // Show success message
+                $('.alert').remove();
+                $('.login-box-msg').after('<div class="alert alert-success alert-dismissible"><button type="button" class="close" data-dismiss="alert">×</button>New verification code has been sent to your email!</div>');
+
+                btn.prop('disabled', true).removeClass('btn-warning').addClass('btn-default').html('<i class="fa fa-refresh"></i> Resend Code');
+            })
+            .fail(function() {
+                $('.alert').remove();
+                $('.login-box-msg').after('<div class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">×</button>Failed to resend code. Please try again.</div>');
+                btn.prop('disabled', false).html('<i class="fa fa-refresh"></i> Resend Code');
+            });
+        });
+
+        // Auto-focus first input
+        $('.otp-input').first().focus();
+    });
+</script>
+
+<style>
+    .otp-input:focus {
+        border-color: #3c8dbc;
+        box-shadow: 0 0 5px rgba(60, 141, 188, 0.5);
+    }
+
+    .otp-input-container {
+        gap: 8px;
+    }
+
+    @media (max-width: 480px) {
+        .otp-input {
+            width: 35px !important;
+            height: 35px !important;
+            font-size: 16px !important;
+        }
+    }
+</style>
+</body>
+</html>
