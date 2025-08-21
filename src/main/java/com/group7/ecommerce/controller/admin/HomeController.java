@@ -17,10 +17,8 @@ public class HomeController {
     private final MessageSource messageSource;
 
     @GetMapping("/home")
-    public String admin(){
+    public String admin() {
         log.info("Accessing admin home page");
         return "admin/index";
     }
-
-
 }

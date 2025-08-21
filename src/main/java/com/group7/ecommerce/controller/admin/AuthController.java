@@ -31,7 +31,7 @@ public class AuthController {
     private final MessageSource messageSource;
 
     @GetMapping("/register")
-    public String register(Model model){
+    public String register(Model model) {
         model.addAttribute("admin", new UserRegistrationDto());
         return "register/index";
     }
