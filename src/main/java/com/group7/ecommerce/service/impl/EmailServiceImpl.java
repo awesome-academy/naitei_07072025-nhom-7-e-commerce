@@ -36,7 +36,6 @@ public class EmailServiceImpl implements EmailService {
     private String frontendUrl;
 
     @Override
-    @Async
     public void sendOtpEmail(String to, String otp) {
         try {
             Locale locale = LocaleContextHolder.getLocale();

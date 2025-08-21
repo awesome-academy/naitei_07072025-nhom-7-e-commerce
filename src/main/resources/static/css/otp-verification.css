@@ -1,0 +1,16 @@
+.otp-input:focus {
+    border-color: #3c8dbc;
+    box-shadow: 0 0 5px rgba(60, 141, 188, 0.5);
+}
+
+.otp-input-container {
+    gap: 8px;
+}
+
+@media (max-width: 480px) {
+    .otp-input {
+        width: 35px !important;
+        height: 35px !important;
+        font-size: 16px !important;
+    }
+}

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragment/head :: head}">
+    <title>Register</title></head>
+<body class="hold-transition register-page">
+<div class="container">
+    <div class="register-box">
+        <div class="register-logo">
+            <a href="#"><b>Admin</b>LTE</a>
+        </div>
+
+        <div class="register-box-body">
+            <p class="login-box-msg">Register a new membership</p>
+
+            <!-- Success Message -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <span th:text="${successMessage}"></span>
+            </div>
+
+            <!-- Error Message -->
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <!-- Password Error -->
+            <div th:if="${passwordError}" class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <span th:text="${passwordError}"></span>
+            </div>
+
+            <form th:action="@{/admin/register}" th:object="${admin}" method="post">
+                <div class="form-group has-feedback">
+                    <input type="text"
+                           th:field="*{fullName}"
+                           class="form-control"
+                           placeholder="Full name"
+                           required>
+                    <span class="fa fa-user form-control-feedback"></span>
+                    <span th:if="${#fields.hasErrors('fullName')}"
+                          th:errors="*{fullName}"
+                          class="text-danger"></span>
+                </div>
+                <div class="form-group has-feedback">
+                    <input type="text"
+                           th:field="*{phone}"
+                           class="form-control"
+                           placeholder="Phone"
+                           required>
+                    <span class="fa fa-phone form-control-feedback"></span>
+                    <span th:if="${#fields.hasErrors('phone')}"
+                          th:errors="*{phone}"
+                          class="text-danger"></span>
+                </div>
+                <div class="form-group has-feedback">
+                    <input type="text"
+                           th:field="*{username}"
+                           class="form-control"
+                           placeholder="Username"
+                           required>
+                    <span class="fa fa-user-circle form-control-feedback"></span>
+                    <span th:if="${#fields.hasErrors('username')}"
+                          th:errors="*{username}"
+                          class="text-danger"></span>
+                </div>
+                <div class="form-group has-feedback">
+                    <input type="email"
+                           th:field="*{email}"
+                           class="form-control"
+                           placeholder="Email"
+                           required>
+                    <span class="fa fa-envelope form-control-feedback"></span>
+                    <span th:if="${#fields.hasErrors('email')}"
+                          th:errors="*{email}"
+                          class="text-danger"></span>
+                </div>
+                <div class="form-group has-feedback">
+                    <input type="password"
+                           th:field="*{password}"
+                           class="form-control"
+                           placeholder="Password"
+                           required>
+                    <span class="fa fa-lock form-control-feedback"></span>
+                    <span th:if="${#fields.hasErrors('password')}"
+                          th:errors="*{password}"
+                          class="text-danger"></span>
+                </div>
+                <div class="form-group has-feedback">
+                    <input type="password"
+                           name="retypePassword"
+                           class="form-control"
+                           placeholder="Retype password"
+                           required>
+                    <span class="fa fa-sign-in form-control-feedback"></span>
+                </div>
+
+                <div class="row" style="margin-top: 10px;">
+                    <div class="col-xs-8">
+                        <a th:href="@{/admin/login}" class="text-center" style="margin-left:-55px">
+                            I already have a membership
+                        </a>
+                    </div>
+                    <div class="col-xs-4">
+                        <button type="submit" class="btn btn-primary btn-block btn-flat">
+                            Register
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <!-- /.form-box -->
+    </div>
+    <!-- /.register-box -->
+</div>
+
+<!-- jQuery from CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap JS from CDN -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<!-- iCheck from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.3/icheck.min.js"></script>
+<script th:src="@{/js/otp-verification.js}"></script>
+</body>
+</html>
