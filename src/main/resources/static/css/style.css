@@ -1,0 +1,248 @@
+.box-tools .breadcrumb{
+    margin-bottom: 0;
+    padding: 5px;
+    background: none;
+}
+.box-tools .breadcrumb li{
+    margin-right: 15px;
+    float: left
+}
+.box-tools .breadcrumb li a{
+    color: #333
+}
+.content-header > .breadcrumb{
+    padding: 0 7px
+}
+.content .panel-body{
+    padding: 5px
+}
+.table-form .form-inline .input-group>.form-control{
+    width: 300px;
+}
+.panel-pagination .panel-body{
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.post-category{
+    padding-left: 0
+}
+.post-category ul{
+    padding-left: 15px
+}
+.btn-social{
+    padding-left: 32px
+}
+.btn-social > :first-child {
+    width: 32px;
+    line-height: 32px;
+    font-size: 16px;
+}
+.table-action a.label{
+    margin-left: 5px
+}
+
+.mvd:hover{
+    background-color:#0d6efd;
+    color:white;
+}
+
+/* Fix AdminLTE Layout */
+body {
+    background-color: #ecf0f5;
+}
+
+.wrapper {
+    min-height: 100vh;
+}
+
+.main-header {
+    position: relative;
+    z-index: 1030;
+}
+
+.main-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 230px;
+    z-index: 1020;
+}
+
+.content-wrapper {
+    margin-left: 230px;
+    min-height: calc(100vh - 50px);
+    background-color: #ecf0f5;
+}
+
+/* Sidebar collapsed state */
+.sidebar-collapse .content-wrapper {
+    margin-left: 50px;
+}
+
+.sidebar-collapse .main-sidebar {
+    width: 50px;
+}
+
+/* Fix menu items */
+.sidebar-menu > li > a {
+    display: block;
+    padding: 12px 15px 12px 15px;
+    color: #b8c7ce;
+}
+
+.sidebar-menu > li:hover > a,
+.sidebar-menu > li.active > a {
+    color: #fff;
+    background: #1e282c;
+    border-left: 3px solid #3c8dbc;
+}
+
+/* Content sections */
+.content-header {
+    padding: 15px;
+    margin: 0 0 20px 0;
+    background: #fff;
+    border-bottom: 1px solid #d2d6de;
+}
+
+.content {
+    padding: 0 15px;
+}
+
+/* ===== CLEAN NAVBAR FIX ===== */
+.main-header .navbar {
+    margin-bottom: 0;
+    margin-left: 230px;
+    border-radius: 0;
+    min-height: 50px;
+    border: none;
+    padding: 0;
+    display: block;
+    position: relative;
+}
+
+/* ===== SIDEBAR TOGGLE - CLEAN VERSION ===== */
+.main-header .sidebar-toggle {
+    float: left;
+    background-color: transparent;
+    background-image: none;
+    padding: 15px 15px;
+    margin: 0;
+    color: #fff;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.main-header .sidebar-toggle:hover,
+.main-header .sidebar-toggle:focus {
+    background-color: rgba(255,255,255,0.1);
+}
+
+/* ===== NAVBAR CUSTOM MENU - CLEAN VERSION ===== */
+.main-header .navbar-custom-menu {
+    float: right;
+    margin: 0;
+}
+
+.main-header .navbar-custom-menu > .navbar-nav {
+    margin: 0;
+    float: left;
+}
+
+.main-header .navbar-custom-menu > .navbar-nav > li {
+    float: left;
+}
+
+.main-header .navbar-custom-menu > .navbar-nav > li > a {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    line-height: 20px;
+    color: rgba(255,255,255,0.8);
+}
+
+.main-header .navbar-custom-menu > .navbar-nav > li > a:hover,
+.main-header .navbar-custom-menu > .navbar-nav > li > a:focus {
+    background-color: rgba(255,255,255,0.1);
+    color: #fff;
+}
+
+/* Fix dropdown menus */
+.main-header .navbar-custom-menu .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: auto;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 4px;
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+}
+
+.main-header .navbar-custom-menu .open .dropdown-menu {
+    display: block;
+}
+
+/* Fix notification badges */
+.main-header .navbar-custom-menu .label {
+    position: absolute;
+    top: 9px;
+    right: 7px;
+    font-size: 9px;
+    padding: 2px 5px;
+    border-radius: 10px;
+}
+
+/* Fix user menu image */
+.main-header .navbar-custom-menu .user-menu .user-image {
+    float: left;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    margin-right: 10px;
+    margin-top: -2px;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+    .content-wrapper {
+        margin-left: 0;
+    }
+
+    .main-sidebar {
+        transform: translateX(-230px);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .sidebar-open .main-sidebar {
+        transform: translateX(0);
+    }
+
+    .main-header .navbar {
+        margin-left: 0;
+    }
+
+    .main-header .navbar-custom-menu > .navbar-nav > li > a {
+        padding: 10px 8px;
+    }
+}
+
+.sidebar-collapse .main-header .navbar {
+    margin-left: 50px;
+}
+
+/* ===== OVERRIDE CONFLICTING STYLES ===== */
+.skin-blue .main-header .navbar .sidebar-toggle {
+    color: #fff;
+}
+
+.skin-blue .main-header .navbar .sidebar-toggle:hover {
+    color: #f6f6f6;
+    background: rgba(0,0,0,0.1);
+}
