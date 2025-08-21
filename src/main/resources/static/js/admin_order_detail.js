@@ -2,7 +2,7 @@ $(document).ready(function() {
     function toggleReasonBlock(selector) {
         var form = $(selector).closest('form');
         if (!form.length) return;
-		
+				
         var reasonBlock = form.find('.reason-block');
         if (!reasonBlock.length) return;
 
@@ -14,7 +14,6 @@ $(document).ready(function() {
             reasonBlock.addClass('d-none').hide();
         }
     }
-	
     $(document).on('change', '.status-selector', function() {
         toggleReasonBlock(this);
     });
@@ -24,7 +23,6 @@ $(document).ready(function() {
             toggleReasonBlock(this);
         }
     });
-
     $('.modal').on('show.bs.modal', function() {
         var selectorInModal = $(this).find('.status-selector');
         if (selectorInModal.length) {
