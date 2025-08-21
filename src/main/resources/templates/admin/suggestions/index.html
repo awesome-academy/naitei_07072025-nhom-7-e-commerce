@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragment/head :: head}"></head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+    <header th:replace="~{fragment/header :: header}"></header>
+    <div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header">
+            <h1>Quản lý Sản phẩm Gợi ý</h1>
+        </section>
+
+        <section class="content">
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <h4><i class="icon fa fa-check"></i> Thành công!</h4>
+                <p th:text="${successMessage}"></p>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header"><h3 class="box-title">Danh sách các gợi ý</h3></div>
+                        <div class="box-body">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Người gợi ý</th>
+                                    <th>Ngày gửi</th>
+                                    <th>Trạng thái</th>
+                                    <th>Hành động</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="suggestion : ${suggestionsPage.content}">
+                                    <td th:text="${suggestion.productName}"></td>
+                                    <td th:text="${suggestion.submittedByUsername}"></td>
+                                    <td th:text="${#temporals.format(suggestion.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                                    <td>
+                                        <span class="label" th:text="${suggestion.status}"
+                                              th:classappend="${suggestion.status.name() == 'APPROVED' ? 'label-success' :
+                                                               (suggestion.status.name() == 'PENDING' ? 'label-warning' :
+                                                               (suggestion.status.name() == 'REJECTED' ? 'label-danger' : 'label-info'))}">
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/admin/suggestions/{id}(id=${suggestion.id})}" class="btn btn-info btn-xs" title="Xem và Duyệt">
+                                            <i class="fa fa-pencil"></i> Duyệt
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${suggestionsPage.empty}">
+                                    <td colspan="5" class="text-center">Chưa có gợi ý sản phẩm nào.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+
+                            <div th:if="${suggestionsPage.totalPages > 1}" class="text-center">
+                                <ul class="pagination">
+                                    <li th:class="${suggestionsPage.first} ? 'disabled' : ''">
+                                        <a th:href="@{/admin/suggestions(page=${suggestionsPage.number - 1})}">&laquo;</a>
+                                    </li>
+                                    <li th:each="i : ${#numbers.sequence(0, suggestionsPage.totalPages - 1)}" th:class="${i == suggestionsPage.number} ? 'active' : ''">
+                                        <a th:href="@{/admin/suggestions(page=${i})}" th:text="${i + 1}"></a>
+                                    </li>
+                                    <li th:class="${suggestionsPage.last} ? 'disabled' : ''">
+                                        <a th:href="@{/admin/suggestions(page=${suggestionsPage.number + 1})}">&raquo;</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer th:replace="~{fragment/footer :: footer}"></footer>
+</div>
+
+<div th:replace="~{fragment/script :: script}"></div>
+</body>
+</html>

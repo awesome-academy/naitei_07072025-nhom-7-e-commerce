@@ -12,7 +12,6 @@ import com.group7.ecommerce.dto.response.OrderSummaryResp;
 import com.group7.ecommerce.enums.OrderStatus;
 import com.group7.ecommerce.repository.ReasonRepository;
 import com.group7.ecommerce.service.OrderService;
-import org.springframework.web.bind.annotation.RestController;
 
 @Controller
 @RequestMapping("/admin/orders")
