@@ -9,23 +9,24 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class UserRegistrationDto {
-    @NotBlank(message = "Email không được để trống")
-    @Email(message = "Email không hợp lệ")
+
+    @NotBlank(message = "{user.email.notblank}")
+    @Email(message = "{user.email.invalid}")
     private String email;
 
-    @NotBlank(message = "Tên không được để trống")
-    @Size(min = 2, max = 100, message = "Tên phải từ 2-100 ký tự")
+    @NotBlank(message = "{user.fullName.notblank}")
+    @Size(min = 2, max = 100, message = "{user.fullName.size}")
     private String fullName;
 
-    @NotBlank(message = "Tên tài khoản không được để trống")
-    @Size(min = 2, max = 100, message = "Tên phải từ 2-100 ký tự")
+    @NotBlank(message = "{user.username.notblank}")
+    @Size(min = 2, max = 100, message = "{user.username.size}")
     private String username;
 
-    @NotBlank(message = "Số điện thoại không được để trống")
-    @Pattern(regexp = "^[0-9]{10,11}$", message = "Số điện thoại phải có 10-11 chữ số")
+    @NotBlank(message = "{phone.notblank}")
+    @Pattern(regexp = "^[0-9]{10,11}$", message = "{phone.invalid}")
     private String phone;
 
-    @NotBlank(message = "Mật khẩu không được để trống")
-    @Size(min = 6, message = "Mật khẩu phải có ít nhất 6 ký tự")
+    @NotBlank(message = "{user.password.notblank}")
+    @Size(min = 6, message = "{user.password.size}")
     private String password;
 }

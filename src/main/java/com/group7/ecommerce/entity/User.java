@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -21,24 +22,27 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @NotBlank(message = "{user.username.notblank}")
+    @Size(min = 2, max = 100, message = "{user.username.size}")
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 
-    @NotBlank(message = "Mật khẩu không được để trống")
+    @NotBlank(message = "{user.password.notblank}")
+    @Size(min = 6, message = "{user.password.size}")
     @Column(nullable = false, length = 255)
     private String password;
 
-    @NotBlank(message = "Email không được để trống")
-    @Email(message = "Email không hợp lệ")
+    @NotBlank(message = "{user.email.notblank}")
+    @Email(message = "{user.email.invalid}")
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @NotBlank(message = "Tên không được để trống")
-    @Column(name = "full_name", length = 100)
+    @NotBlank(message = "{user.fullName.notblank}")
+    @Size(min = 2, max = 100, message = "{user.fullName.size}")
     private String fullName;
 
-    @NotBlank(message = "Số điện thoại không được để trống")
-    @Pattern(regexp = "^[0-9]{10,11}$", message = "Số điện thoại phải có 10-11 chữ số")
+    @NotBlank(message = "{phone.notblank}")
+    @Pattern(regexp = "^[0-9]{10,11}$", message = "{phone.invalid}")
     @Column(length = 20)
     private String phone;
 
