@@ -2,6 +2,7 @@ package com.group7.ecommerce.service.impl;
 
 import com.group7.ecommerce.dto.request.ProductDto;
 import com.group7.ecommerce.dto.request.ProductUpdateDto;
+import com.group7.ecommerce.dto.response.ProductResponse;
 import com.group7.ecommerce.entity.Category;
 import com.group7.ecommerce.entity.Product;
 import com.group7.ecommerce.entity.ProductImage;
@@ -11,12 +12,16 @@ import com.group7.ecommerce.repository.ProductImageRepository;
 import com.group7.ecommerce.repository.ProductRepository;
 import com.group7.ecommerce.service.FileStorageService;
 import com.group7.ecommerce.service.ProductService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,7 +29,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -146,31 +154,55 @@ public class ProductServiceImpl implements ProductService {
         productImageRepository.deleteAllByProductId(product.getId());
 
         if (images != null && images.length > 0) {
-            List<ProductImage> productImages = Arrays.stream(images)
-                    .filter(file -> !file.isEmpty())
-                    .map(file -> {
-                        String originalName = Optional.ofNullable(file.getOriginalFilename()).orElse("");
-                        if (!fileStorageService.isValidImageFile(originalName)) {
-                            throw new RuntimeException("File không phải ảnh hợp lệ: " + originalName);
-                        }
-                        String imageUrl;
-                        try {
-                            imageUrl = fileStorageService.copyImageToStatic(file);
-                        } catch (IOException e) {
-                            throw new RuntimeException("Lỗi khi lưu file ảnh", e);
-                        }
-                        ProductImage img = new ProductImage();
-                        img.setImageUrl(imageUrl);
-                        img.setProduct(product);
+            List<ProductImage> productImages = new ArrayList<>();
 
-                        return img;
-                    })
-                    .toList();
+            for (MultipartFile file : images) {
+                if (!file.isEmpty()) {
+                    String originalName = file.getOriginalFilename();
+                    if (!fileStorageService.isValidImageFile(originalName)) {
+                        throw new RuntimeException("File không phải ảnh hợp lệ: " + originalName);
+                    }
+                    String imageUrl;
+                    try {
+                        imageUrl = fileStorageService.copyImageToStatic(file);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Lỗi khi lưu file ảnh", e);
+                    }
+
+                    ProductImage img = new ProductImage();
+                    img.setImageUrl(imageUrl);
+                    img.setProduct(product);
+
+                    productImages.add(img);
+                }
+            }
 
             if (!productImages.isEmpty()) {
                 productImageRepository.saveAll(productImages);
             }
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> getAllPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        return productRepository.findAll(pageable)
+                .map(productMapper::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> getAllPagedAndSorted(int page, int size, String sortField, String sortDirection) {
+        Sort sort = sortDirection.equalsIgnoreCase("asc") ?
+                Sort.by(sortField).ascending() :
+                Sort.by(sortField).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return productRepository.findAll(pageable)
+                .map(productMapper::toResponse);
     }
 
     private ProductDto mapRowToDto(Row row) {
