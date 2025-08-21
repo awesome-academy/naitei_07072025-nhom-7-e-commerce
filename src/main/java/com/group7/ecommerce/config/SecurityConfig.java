@@ -55,7 +55,8 @@ public class SecurityConfig {
 						"/api/register",
 						"/api/login",
 						"/api/verify-otp",
-						"/api/resend-otp"
+						"/api/resend-otp",
+                        "/api/guest/**"
 						).permitAll()
 				.requestMatchers("/api/product").hasAuthority("ADMIN")
 				.requestMatchers("/api/order").hasAnyAuthority("USER","ADMIN")
