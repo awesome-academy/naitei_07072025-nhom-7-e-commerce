@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragment/head :: head}">
+    <title>Login</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+</head>
+<body class="login-page">
+<div class="container">
+    <div class="login-box">
+        <div class="login-logo">
+            <a href="#"><b>Admin</b>Panel</a>
+        </div>
+
+        <div class="login-box-body">
+            <p class="login-box-msg">Welcome back! Please sign in to your account</p>
+
+            <!-- Success Message -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="fa fa-check-circle"></i>
+                <span th:text="${successMessage}"></span>
+            </div>
+
+            <!-- Error Message -->
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <i class="fa fa-exclamation-triangle"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <form th:action="@{/admin/login}" th:object="${loginDto}" method="post">
+                <div class="form-group has-feedback">
+                    <input type="text"
+                           th:field="*{emailOrUsername}"
+                           class="form-control"
+                           placeholder="Enter your email or username"
+                           required>
+                    <span class="fa fa-user form-control-feedback"></span>
+                    <span th:if="${#fields.hasErrors('emailOrUsername')}"
+                          th:errors="*{emailOrUsername}"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="form-group has-feedback">
+                    <input type="password"
+                           th:field="*{password}"
+                           class="form-control"
+                           placeholder="Enter your password"
+                           required>
+                    <span class="fa fa-lock form-control-feedback"></span>
+                    <span th:if="${#fields.hasErrors('password')}"
+                          th:errors="*{password}"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-8">
+                        <div class="checkbox icheck" style="margin-left: -15px">
+                            <label>
+                                <input type="checkbox"> Remember me
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <button type="submit" class="btn btn-primary btn-block btn-flat">
+                            <i class="fa fa-sign-in"></i> Sign In
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="social-auth-links text-center" style="margin-top: 20px;">
+                <a href="#" class="text-center">
+                    <i class="fa fa-question-circle"></i> Forgot your password?
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script th:src="@{/js/jquery.min.js}"></script>
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<script th:src="@{/js/login.js}"></script>
+</body>
+</html>
