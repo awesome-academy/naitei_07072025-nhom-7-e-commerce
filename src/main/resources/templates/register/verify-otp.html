@@ -1,94 +1,105 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragment/head :: head}">
+<head>
     <title>OTP Verification</title>
-    <link th:href="@{/css/otp-verification.css}" rel="stylesheet">
+    <link th:href="@{/css/all.min.css}" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/register.css}">
 </head>
-<body class="hold-transition register-page">
-<div class="container">
-    <div class="register-box">
-        <div class="register-logo">
-            <a href="#"><b>Admin</b>LTE</a>
+<body>
+<div class="otp-container">
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="otp-header">
+        <a href="#" class="otp-logo">Admin Panel</a>
+        <p class="otp-subtitle">Email Verification</p>
+        <p class="otp-description">Please enter the verification code we sent to your email</p>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="verification-progress">
+        <div class="progress-dots">
+            <div class="progress-dot active"></div>
+            <div class="progress-dot active"></div>
+            <div class="progress-dot active"></div>
+            <div class="progress-dot"></div>
+        </div>
+    </div>
+
+    <!-- Info Message -->
+    <div class="alert alert-info">
+        <i class="fas fa-envelope"></i>
+        <span>We've sent a 6-digit verification code to <span class="email-highlight" th:text="${email}">your.email@example.com</span></span>
+        <button type="button" class="close" onclick="this.parentElement.remove();">&times;</button>
+    </div>
+
+    <!-- Success Message -->
+    <div th:if="${successMessage}" class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <span th:text="${successMessage}">Success message here</span>
+        <button type="button" class="close" onclick="this.parentElement.remove();">&times;</button>
+    </div>
+
+    <!-- Error Message -->
+    <div th:if="${errorMessage}" class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span th:text="${errorMessage}">Error message here</span>
+        <button type="button" class="close" onclick="this.parentElement.remove();">&times;</button>
+    </div>
+
+    <!-- OTP Verification Form -->
+    <form th:action="@{/auth/admin/verify-otp}" method="post" id="otpForm">
+        <input type="hidden" name="email" th:value="${email}" value="user@example.com">
+
+        <div class="otp-section">
+            <label class="otp-label">Enter your 6-digit code</label>
+            <div class="otp-input-container">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+            </div>
+            <input type="hidden" name="otp" id="combinedOtp">
         </div>
 
-        <div class="register-box-body">
-            <p class="login-box-msg">Verify Your Email</p>
-
-            <!-- Info Message -->
-            <div class="alert alert-info">
-                <i class="fa fa-envelope"></i>
-                We've sent a 6-digit verification code to <strong th:text="${email}">your email</strong>
+        <!-- Countdown Timer -->
+        <div class="countdown-section">
+            <div class="countdown-text">
+                <i class="fas fa-clock"></i>
+                <span>Code expires in: <span class="timer" id="timer">05:00</span></span>
             </div>
-
-            <!-- Success Message -->
-            <div th:if="${successMessage}" class="alert alert-success alert-dismissible">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                <span th:text="${successMessage}"></span>
-            </div>
-
-            <!-- Error Message -->
-            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                <span th:text="${errorMessage}"></span>
-            </div>
-
-            <!-- OTP Verification Form -->
-            <form th:action="@{/admin/verify-otp}" method="post" id="otpForm">
-                <input type="hidden" name="email" th:value="${email}">
-
-                <div class="form-group">
-                    <label>Enter 6-digit verification code:</label>
-                    <div class="otp-input-container" style="display: flex; justify-content: space-between; margin: 15px 0;">
-                        <input type="text" class="otp-input form-control" maxlength="1" style="width: 45px; height: 45px; text-align: center; font-size: 18px; font-weight: bold;">
-                        <input type="text" class="otp-input form-control" maxlength="1" style="width: 45px; height: 45px; text-align: center; font-size: 18px; font-weight: bold;">
-                        <input type="text" class="otp-input form-control" maxlength="1" style="width: 45px; height: 45px; text-align: center; font-size: 18px; font-weight: bold;">
-                        <input type="text" class="otp-input form-control" maxlength="1" style="width: 45px; height: 45px; text-align: center; font-size: 18px; font-weight: bold;">
-                        <input type="text" class="otp-input form-control" maxlength="1" style="width: 45px; height: 45px; text-align: center; font-size: 18px; font-weight: bold;">
-                        <input type="text" class="otp-input form-control" maxlength="1" style="width: 45px; height: 45px; text-align: center; font-size: 18px; font-weight: bold;">
-                    </div>
-                    <input type="hidden" name="otp" id="combinedOtp">
-                </div>
-
-                <!-- Countdown Timer -->
-                <div class="text-center" style="margin: 20px 0;">
-                    <div id="countdown" class="text-muted" style="font-size: 14px;">
-                        <i class="fa fa-clock-o"></i> Code expires in: <span id="timer">05:00</span>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="row" style="margin-top: 20px;">
-                    <div class="col-xs-6">
-                        <button type="button" id="resendBtn" class="btn btn-default btn-block" disabled>
-                            <i class="fa fa-refresh"></i> Resend Code
-                        </button>
-                    </div>
-                    <div class="col-xs-6">
-                        <button type="submit" class="btn btn-primary btn-block" id="verifyBtn" disabled>
-                            <i class="fa fa-check"></i> Verify
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Help Text -->
-                <div class="text-center" style="margin-top: 20px;">
-                    <p class="text-muted" style="font-size: 12px;">
-                        <i class="fa fa-info-circle"></i>
-                        Didn't receive the code? Check your spam folder or click resend.
-                    </p>
-                    <a th:href="@{/admin/register}" class="text-center">
-                        <i class="fa fa-arrow-left"></i> Back to Registration
-                    </a>
-                </div>
-            </form>
         </div>
+
+        <!-- Action Buttons -->
+        <div class="form-actions">
+            <button type="button" id="resendBtn" class="btn btn-resend" disabled>
+                <i class="fas fa-redo"></i>
+                <span>Resend Code</span>
+            </button>
+            <button type="submit" class="btn btn-verify" id="verifyBtn" disabled>
+                <i class="fas fa-check-circle"></i>
+                <span>Verify Code</span>
+            </button>
+        </div>
+    </form>
+
+    <!-- Help Section -->
+    <div class="help-section">
+        <p class="help-text">
+            <i class="fas fa-info-circle"></i>
+            Didn't receive the code? Check your spam folder or request a new one.
+        </p>
+        <a th:href="@{/auth/admin/register}" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Registration</span>
+        </a>
     </div>
 </div>
 
-<!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-
-<script th:src="@{/js/otp-verification.js}"></script>
+<script th:src="@{/js/register.js}"></script>
+<script th:src="@{/js/jquery.min.js"></script>
 </body>
 </html>

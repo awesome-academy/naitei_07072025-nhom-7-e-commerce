@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 @Service
@@ -25,6 +29,7 @@ public class EmailServiceImpl implements EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
     private final MessageSource messageSource;
+    private final ResourceLoader resourceLoader;
 
     @Value("${app.email.from:noreply@ecommerce.com}")
     private String fromEmail;
@@ -47,6 +52,15 @@ public class EmailServiceImpl implements EmailService {
             context.setVariable("appName", appName);
             context.setVariable("frontendUrl", frontendUrl);
             context.setVariable("expiryMinutes", 5);
+
+            // Inject CSS content if using external CSS file
+            try {
+                String cssContent = loadCssContent("static/css/email.css");
+                context.setVariable("emailCss", cssContent);
+            } catch (IOException e) {
+                log.warn("Could not load CSS file, using default styling", e);
+                context.setVariable("emailCss", ""); // Fallback to inline CSS in template
+            }
 
             // Generate HTML content from template
             String htmlContent = templateEngine.process("emails/otp-verification", context);
@@ -83,6 +97,15 @@ public class EmailServiceImpl implements EmailService {
             context.setVariable("dashboardUrl", frontendUrl + "/dashboard");
             context.setVariable("supportEmail", "support@ecommerce.com");
 
+            // Inject CSS content
+            try {
+                String cssContent = loadCssContent("static/css/email.css");
+                context.setVariable("emailCss", cssContent);
+            } catch (IOException e) {
+                log.warn("Could not load CSS file for welcome email", e);
+                context.setVariable("emailCss", "");
+            }
+
             String htmlContent = templateEngine.process("emails/welcome", context);
 
             String subject = messageSource.getMessage(
@@ -117,6 +140,15 @@ public class EmailServiceImpl implements EmailService {
             context.setVariable("frontendUrl", frontendUrl);
             context.setVariable("expiryMinutes", 15);
 
+            // Inject CSS content
+            try {
+                String cssContent = loadCssContent("static/css/email.css");
+                context.setVariable("emailCss", cssContent);
+            } catch (IOException e) {
+                log.warn("Could not load CSS file for reset password email", e);
+                context.setVariable("emailCss", "");
+            }
+
             String htmlContent = templateEngine.process("emails/reset-password", context);
 
             String subject = messageSource.getMessage(
@@ -131,7 +163,9 @@ public class EmailServiceImpl implements EmailService {
         } catch (Exception e) {
             log.error("Failed to send reset password email to: {}", to, e);
             throw new RuntimeException(
-                    messageSource.getMessage("email.send.error", null, LocaleContextHolder.getLocale()),
+                    messageSource.getMessage("email.send.error",
+                            null,
+                            LocaleContextHolder.getLocale()),
                     e
             );
         }
@@ -200,5 +234,18 @@ public class EmailServiceImpl implements EmailService {
         }
 
         return result.toString().isEmpty() ? "Bạn" : result.toString();
+    }
+
+    /**
+     * Load CSS content from classpath
+     */
+    private String loadCssContent(String cssPath) throws IOException {
+        Resource cssResource = resourceLoader.getResource("classpath:" + cssPath);
+
+        if (!cssResource.exists()) {
+            throw new IOException("CSS file not found: " + cssPath);
+        }
+
+        return new String(cssResource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     }
 }

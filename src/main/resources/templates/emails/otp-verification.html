@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mã OTP Xác Thực</title>
-    <link rel="stylesheet" th:href="@{/css/email}" />
+    <!-- Inject CSS content từ service -->
+    <style th:if="${emailCss}" th:utext="${emailCss}"></style>
+    <!-- Fallback inline CSS nếu không load được external CSS -->
+    <style th:if="${emailCss == null or emailCss == ''}">
+        /* Fallback CSS here */
+        body { font-family: Arial, sans-serif; }
+        .otp-code { font-size: 24px; font-weight: bold; }
+    </style>
 </head>
 <body>
 <div class="template-otp" >
