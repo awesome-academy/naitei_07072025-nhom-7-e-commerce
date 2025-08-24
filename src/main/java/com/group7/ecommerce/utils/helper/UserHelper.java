@@ -8,6 +8,7 @@ import com.group7.ecommerce.entity.User;
 import com.group7.ecommerce.repository.UserRepository;
 import com.group7.ecommerce.service.EmailService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import java.util.Random;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class UserHelper {
 
     private final UserRepository userRepository;
@@ -104,5 +106,17 @@ public class UserHelper {
     public User findUserByEmailOrUsernameOrThrow(String emailOrUsername) {
         return userRepository.findByEmailOrUsername(emailOrUsername, emailOrUsername)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found after authentication"));
+    }
+
+    /**
+     * Đếm tổng số user trong hệ thống
+     */
+    public long getTotalUsers() {
+        try {
+            return userRepository.count();
+        } catch (Exception e) {
+            log.error("Error getting total users count", e);
+            return 0L;
+        }
     }
 }
