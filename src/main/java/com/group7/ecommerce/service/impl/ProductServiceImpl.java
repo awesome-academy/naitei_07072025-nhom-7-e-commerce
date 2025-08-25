@@ -2,6 +2,7 @@ package com.group7.ecommerce.service.impl;
 
 import com.group7.ecommerce.dto.request.ProductDto;
 import com.group7.ecommerce.dto.request.ProductUpdateDto;
+import com.group7.ecommerce.dto.response.ProductResponse;
 import com.group7.ecommerce.entity.Category;
 import com.group7.ecommerce.entity.Product;
 import com.group7.ecommerce.entity.ProductImage;
@@ -11,12 +12,16 @@ import com.group7.ecommerce.repository.ProductImageRepository;
 import com.group7.ecommerce.repository.ProductRepository;
 import com.group7.ecommerce.service.FileStorageService;
 import com.group7.ecommerce.service.ProductService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -171,6 +176,29 @@ public class ProductServiceImpl implements ProductService {
                 productImageRepository.saveAll(productImages);
             }
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> getAllPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+
+        return productRepository.findAll(pageable)
+                .map(productMapper::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> getAllPagedAndSorted(int page, int size, String sortField, String sortDirection) {
+        Sort sort = sortDirection.equalsIgnoreCase("asc") ?
+                Sort.by(sortField).ascending() :
+                Sort.by(sortField).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return productRepository.findAll(pageable)
+                .map(productMapper::toResponse);
     }
 
     private ProductDto mapRowToDto(Row row) {
