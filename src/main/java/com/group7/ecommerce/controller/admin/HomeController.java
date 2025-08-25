@@ -3,13 +3,17 @@ package com.group7.ecommerce.controller.admin;
 import com.group7.ecommerce.dto.response.JwtResponse;
 import com.group7.ecommerce.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import com.group7.ecommerce.dto.response.ShowProfileResponse;
+import com.group7.ecommerce.service.OrderService;
+import com.group7.ecommerce.service.ShipInfoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Locale;
 
 @Controller
 @RequestMapping("/admin")
@@ -18,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 public class HomeController {
 
     private final UserService userService;
+    private final OrderService orderService;
+    private final ShipInfoService shipInfoService;
     private final MessageSource messageSource;
 
     @GetMapping("/home")
@@ -33,4 +39,31 @@ public class HomeController {
 
         return "admin/index";
     }
+
+    @GetMapping("/info")
+    public String showProfile(HttpServletRequest request, Model model, Locale locale) {
+        log.info("Accessing admin profile page");
+
+        JwtResponse currentUser = (JwtResponse) request.getAttribute("currentUser");
+        if (currentUser == null) {
+            log.warn("Unauthorized access to admin profile");
+            return "redirect:/auth/login";
+        }
+
+        try {
+            ShowProfileResponse showProfileResponse = userService.showProfileAdmin(currentUser);
+            model.addAttribute("currentUser", currentUser);
+            model.addAttribute("profileUser", showProfileResponse);
+
+            log.info("Admin profile loaded successfully for: {}", currentUser.getUsername());
+            return "admin/info/index"; // Trả về template chính xác
+
+        } catch (Exception e) {
+            log.error("Error loading admin profile for username: {}", currentUser.getUsername(), e);
+            model.addAttribute("error",
+                    messageSource.getMessage("admin.profile.error.message", null, locale));
+            return "admin/info/index";
+        }
+    }
+
 }
