@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.NoSuchMessageException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +35,24 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-    private final MessageSource messageSource;
+	private final MessageSource messageSource;
+
+	private String i18n(String code, Object... args) {
+		return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
+	}
+
+	/**
+	 * Trả về thông điệp i18n nếu key tồn tại, nếu không thì trả lại chính key gốc.
+	 */
+	private String messageOrKey(String key, Object... args) {
+		if (key == null) return null;
+		try {
+			return messageSource.getMessage(key, args, LocaleContextHolder.getLocale());
+		} catch (NoSuchMessageException e) {
+			return key;
+		}
+	}
+
 
     /**
      * Xử lý lỗi validation cho @Valid annotation (Request Body)
@@ -181,8 +199,10 @@ public class GlobalExceptionHandler {
             IllegalArgumentException ex) {
 
         log.warn("Business logic error: {}", ex.getMessage());
+        // Nếu message là key i18n (ví dụ từ GuestController), sẽ được dịch;
+        // nếu không phải key, trả lại nguyên văn.
         return ResponseEntity.badRequest()
-                .body(ApiResponse.error(ex.getMessage()));
+                .body(ApiResponse.error(messageOrKey(ex.getMessage())));
     }
 
     /**
@@ -266,7 +286,7 @@ public class GlobalExceptionHandler {
 
         log.warn("Validation error: {}", ex.getMessage());
         return ResponseEntity.badRequest()
-                .body(ApiResponse.error(ex.getMessage()));
+                .body(ApiResponse.error(messageOrKey(ex.getMessage())));
     }
 
     /**
@@ -278,7 +298,7 @@ public class GlobalExceptionHandler {
 
         log.warn("Business logic error: {}", ex.getMessage());
         return ResponseEntity.badRequest()
-                .body(ApiResponse.error(ex.getMessage()));
+                .body(ApiResponse.error(messageOrKey(ex.getMessage())));
     }
 
     /**
