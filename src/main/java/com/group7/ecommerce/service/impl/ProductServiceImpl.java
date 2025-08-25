@@ -1,8 +1,10 @@
 package com.group7.ecommerce.service.impl;
 
 import com.group7.ecommerce.dto.request.ProductDto;
+import com.group7.ecommerce.dto.request.ProductFilterDto;
 import com.group7.ecommerce.dto.request.ProductUpdateDto;
 import com.group7.ecommerce.entity.Category;
+import com.group7.ecommerce.dto.response.ProductListItemResponse;
 import com.group7.ecommerce.entity.Product;
 import com.group7.ecommerce.entity.ProductImage;
 import com.group7.ecommerce.mapper.ProductMapper;
@@ -17,6 +19,8 @@ import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -251,5 +255,57 @@ public class ProductServiceImpl implements ProductService {
         if (cell == null) return false;
         if (cell.getCellType() == CellType.BOOLEAN) return cell.getBooleanCellValue();
         return Boolean.parseBoolean(cell.toString().trim());
+    }
+
+    @Override
+    public Page<ProductListItemResponse> getAllProducts(Pageable pageable) {
+        return productRepository.findAllActiveProducts(pageable);
+    }
+    
+    @Override
+    public Page<ProductListItemResponse> getAllProducts(ProductFilterDto filterDto, Pageable pageable) {
+        // Nếu không có filter nào và sắp xếp là mặc định, sử dụng method cũ
+        if (isEmptyFilter(filterDto) && isDefaultSort(filterDto)) {
+            return getAllProducts(pageable);
+        }
+        
+        // Sử dụng custom repository để filter/sort động
+        return productRepository.findProductsWithFilter(filterDto, pageable);
+    }
+    
+    /**
+     * Kiểm tra xem có phải sắp xếp mặc định không
+     */
+    private boolean isDefaultSort(ProductFilterDto filterDto) {
+        if (filterDto == null) return true;
+        
+        String sortBy = filterDto.sortBy();
+        String sortDirection = filterDto.sortDirection();
+        
+        return (sortBy == null || "createdAt".equals(sortBy)) && 
+               (sortDirection == null || "desc".equals(sortDirection));
+    }
+    
+    /**
+     * Kiểm tra xem filter có rỗng hay không (không tính tham số sắp xếp)
+     */
+    private boolean isEmptyFilter(ProductFilterDto filterDto) {
+        if (filterDto == null) return true;
+        
+        return (filterDto.name() == null || filterDto.name().trim().isEmpty()) &&
+               (filterDto.description() == null || filterDto.description().trim().isEmpty()) &&
+               filterDto.minSellingPrice() == null &&
+               filterDto.maxSellingPrice() == null &&
+               filterDto.minImportPrice() == null &&
+               filterDto.maxImportPrice() == null &&
+               filterDto.minStockQuantity() == null &&
+               filterDto.maxStockQuantity() == null &&
+               filterDto.categoryId() == null &&
+               (filterDto.categoryName() == null || filterDto.categoryName().trim().isEmpty()) &&
+               filterDto.isFeatured() == null &&
+               filterDto.createdAfter() == null &&
+               filterDto.createdBefore() == null &&
+               filterDto.updatedAfter() == null &&
+               filterDto.updatedBefore() == null;
     }
 }
