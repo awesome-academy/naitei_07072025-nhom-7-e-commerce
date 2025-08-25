@@ -55,7 +55,12 @@ public class SecurityConfig {
 						"/api/register",
 						"/api/login",
 						"/api/verify-otp",
-						"/api/resend-otp"
+						"/api/resend-otp",
+                        "/api/catalog/**",
+						"/swagger-ui/**",
+						"/swagger-ui.html",
+						"/v3/api-docs/**",
+						"/v3/api-docs.yaml"
 						).permitAll()
 				.requestMatchers("/api/product").hasAuthority("ADMIN")
 				.requestMatchers("/api/order").hasAnyAuthority("USER","ADMIN")
