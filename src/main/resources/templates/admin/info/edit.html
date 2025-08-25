@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragment/head :: head}">
+    <title>Edit Profile</title>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+    <header th:replace="~{fragment/header :: header}"></header>
+    <div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+    <div class="content-wrapper" style="min-height: 1135.88px;">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1>
+                Edit Administrator Profile
+                <small>Update admin account information</small>
+            </h1>
+            <ol class="breadcrumb">
+                <li><a href="#"><i class="fa fa-dashboard"></i> Dashboard</a></li>
+                <li><a th:href="@{/admin/info}">Admin Profile</a></li>
+                <li class="active">Edit Profile</li>
+            </ol>
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+
+            <!-- Alert messages -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <h4><i class="icon fa fa-check"></i> Thành công!</h4>
+                <span th:text="${success}"></span>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                <h4><i class="icon fa fa-ban"></i> Lỗi!</h4>
+                <span th:text="${error}"></span>
+            </div>
+
+            <div class="row">
+                <!-- Left Column - Info Panel -->
+                <div class="col-md-4">
+                    <div class="box box-info">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">
+                                <i class="fa fa-info-circle"></i> Thông tin quan trọng
+                            </h3>
+                        </div>
+                        <div class="box-body">
+                            <div class="callout callout-warning">
+                                <h4><i class="fa fa-exclamation-triangle"></i> Lưu ý</h4>
+                                <ul style="margin-bottom: 0;">
+                                    <li>Tên đăng nhập và email không thể thay đổi</li>
+                                    <li>Họ tên là trường bắt buộc</li>
+                                    <li>Số điện thoại phải đúng định dạng Việt Nam</li>
+                                    <li>Thông tin sẽ được lưu ngay lập tức</li>
+                                </ul>
+                            </div>
+
+                            <div class="info-box bg-blue">
+                                <span class="info-box-icon"><i class="fa fa-clock-o"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Tạo tài khoản</span>
+                                    <span class="info-box-number" th:text="${#temporals.format(profileUser.user.createdAt, 'dd/MM/yyyy')}">25/08/2024</span>
+                                </div>
+                            </div>
+
+                            <div class="info-box bg-green" th:if="${profileUser.user.updatedAt}">
+                                <span class="info-box-icon"><i class="fa fa-edit"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Cập nhật cuối</span>
+                                    <span class="info-box-number" th:text="${#temporals.format(profileUser.user.updatedAt, 'dd/MM/yyyy')}">25/08/2024</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Edit Form -->
+                <div class="col-md-8">
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">
+                                <i class="fa fa-edit"></i> Chỉnh sửa thông tin cá nhân
+                            </h3>
+                        </div>
+
+                        <!-- Form start -->
+                        <form th:action="@{/admin/info/update}"
+                              th:object="${updateProfileRequest}"
+                              method="post"
+                              class="form-horizontal">
+
+                            <div class="box-body">
+
+                                <!-- Username (readonly) -->
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">
+                                        <i class="fa fa-user"></i> Tên đăng nhập
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <input type="text"
+                                               class="form-control"
+                                               th:value="${profileUser.user.username}"
+                                               readonly
+                                               style="background-color: #f4f4f4;">
+                                        <span class="help-block">
+                      <i class="fa fa-info-circle"></i> Không thể thay đổi tên đăng nhập
+                    </span>
+                                    </div>
+                                </div>
+
+                                <!-- Email (readonly) -->
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">
+                                        <i class="fa fa-envelope"></i> Email
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <input type="email"
+                                               class="form-control"
+                                               th:value="${profileUser.user.email}"
+                                               readonly
+                                               style="background-color: #f4f4f4;">
+                                        <input type="hidden" th:field="*{email}" />
+                                        <span class="help-block">
+                      <i class="fa fa-info-circle"></i> Không thể thay đổi địa chỉ email
+                    </span>
+                                    </div>
+                                </div>
+
+                                <!-- Full Name -->
+                                <div class="form-group" th:classappend="${#fields.hasErrors('fullName')} ? 'has-error'">
+                                    <label for="fullName" class="col-sm-3 control-label">
+                                        <i class="fa fa-id-card"></i> Họ và tên <span class="text-red">*</span>
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <input type="text"
+                                               class="form-control"
+                                               id="fullName"
+                                               th:field="*{fullName}"
+                                               placeholder="Nhập họ và tên đầy đủ">
+                                        <span class="help-block" th:if="${#fields.hasErrors('fullName')}">
+                      <i class="fa fa-exclamation-circle"></i>
+                      <span th:errors="*{fullName}"></span>
+                    </span>
+                                    </div>
+                                </div>
+
+                                <!-- Phone Number -->
+                                <div class="form-group" th:classappend="${#fields.hasErrors('phone')} ? 'has-error'">
+                                    <label for="phone" class="col-sm-3 control-label">
+                                        <i class="fa fa-phone"></i> Số điện thoại
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <input type="tel"
+                                               class="form-control"
+                                               id="phone"
+                                               th:field="*{phone}"
+                                               placeholder="Ví dụ: 0123456789">
+                                        <span class="help-block" th:if="${#fields.hasErrors('phone')}">
+                      <i class="fa fa-exclamation-circle"></i>
+                      <span th:errors="*{phone}"></span>
+                    </span>
+                                        <span class="help-block" th:unless="${#fields.hasErrors('phone')}">
+                      Định dạng: 0xxxxxxxxx hoặc +84xxxxxxxxx
+                    </span>
+                                    </div>
+                                </div>
+
+                                <!-- Address -->
+                                <div class="form-group" th:classappend="${#fields.hasErrors('address')} ? 'has-error'">
+                                    <label for="address" class="col-sm-3 control-label">
+                                        <i class="fa fa-map-marker"></i> Địa chỉ
+                                    </label>
+                                    <div class="col-sm-9">
+                    <textarea class="form-control"
+                              id="address"
+                              th:field="*{address}"
+                              rows="3"
+                              placeholder="Nhập địa chỉ của bạn"></textarea>
+                                        <span class="help-block" th:if="${#fields.hasErrors('address')}">
+                      <i class="fa fa-exclamation-circle"></i>
+                      <span th:errors="*{address}"></span>
+                    </span>
+                                    </div>
+                                </div>
+
+                                <!-- Role (readonly) -->
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">
+                                        <i class="fa fa-user-shield"></i> Vai trò
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p class="form-control-static">
+                                            <span class="label label-danger">Administrator</span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- /.box-body -->
+                            <div class="box-footer">
+                                <div class="pull-left">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fa fa-save"></i> Lưu thay đổi
+                                    </button>
+                                </div>
+                                <div class="pull-right">
+                                    <a th:href="@{/admin/info}" class="btn btn-default">
+                                        <i class="fa fa-times"></i> Hủy bỏ
+                                    </a>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- /.box -->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+
+        </section>
+        <!-- /.content -->
+    </div>
+
+</div>
+
+<div th:replace="~{fragment/script :: script}"></div>
+
+<!-- Custom JavaScript -->
+<script th:src="@{/js/profile.edit.js}"></script>
+
+</body>
+</html>
