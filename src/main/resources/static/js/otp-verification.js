@@ -16,7 +16,7 @@ function togglePasswordVisibility(inputId, iconElement) {
 document.addEventListener('DOMContentLoaded', function() {
     // Register page functionality
     initializeRegisterForm();
-
+    
     // OTP page functionality
     initializeOTPForm();
 });
@@ -384,7 +384,6 @@ function initializeOTPForm() {
                 if (combinedOtpInput) combinedOtpInput.value = '';
                 if (verifyBtn) verifyBtn.disabled = true;
 
-                // Simulate resend request
                 setTimeout(() => {
                     this.innerHTML = '<i class="fas fa-redo"></i><span>Code Sent!</span>';
                     startTimer();
@@ -420,7 +419,7 @@ function initializeOTPForm() {
 }
 
 // jQuery-based OTP functionality (from the second document)
-document.ready(function() {
+$(document).ready(function() {
     // OTP Input Handling
     $('.otp-input').on('input', function() {
         var value = $(this).val();
@@ -738,7 +737,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // jQuery-based OTP functionality (from the second document)
-document.ready(function() {
+$(document).ready(function() {
     // OTP Input Handling
     $('.otp-input').on('input', function() {
         var value = $(this).val();
