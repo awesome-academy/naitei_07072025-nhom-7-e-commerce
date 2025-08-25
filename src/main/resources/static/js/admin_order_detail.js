@@ -1,23 +1,35 @@
-document.addEventListener("DOMContentLoaded", function() {
-    const allStatusSelectors = document.querySelectorAll('.status-selector');
+$(document).ready(function() {
     function toggleReasonBlock(selector) {
-        const form = selector.closest('form');
-        if (!form) return;
+        var form = $(selector).closest('form');
+        if (!form.length) return;
 
-        const reasonBlock = form.querySelector('.reason-block');
-        if (!reasonBlock) return;
+        var reasonBlock = form.find('.reason-block');
+        if (!reasonBlock.length) return;
 
-        const selectedStatus = selector.value;
+        var selectedStatus = $(selector).val();
+
         if (selectedStatus === 'CANCELLED' || selectedStatus === 'REJECTED') {
-            reasonBlock.classList.remove('d-none');
+            reasonBlock.removeClass('d-none').show();
         } else {
-            reasonBlock.classList.add('d-none'); 
+            reasonBlock.addClass('d-none').hide();
         }
     }
-    allStatusSelectors.forEach(function(selector) {
-        toggleReasonBlock(selector); 
-        selector.addEventListener('change', function() {
-            toggleReasonBlock(this);
-        });
+
+    $(document).on('change', '.status-selector', function() {
+        toggleReasonBlock(this);
     });
+
+    $('.status-selector').each(function() {
+        if ($(this).closest('.modal').length === 0) {
+            toggleReasonBlock(this);
+        }
+    });
+	
+    $('.modal').on('show.bs.modal', function() {
+        var selectorInModal = $(this).find('.status-selector');
+        if (selectorInModal.length) {
+            toggleReasonBlock(selectorInModal);
+        }
+    });
+
 });
