@@ -1,14 +1,19 @@
 package com.group7.ecommerce.service.impl;
 
 import com.group7.ecommerce.dto.request.ProductDto;
+import com.group7.ecommerce.dto.request.ProductFilterDto;
 import com.group7.ecommerce.dto.request.ProductUpdateDto;
+import com.group7.ecommerce.dto.response.ProductDetailResponse;
 import com.group7.ecommerce.entity.Category;
+import com.group7.ecommerce.dto.response.ProductListItemResponse;
 import com.group7.ecommerce.entity.Product;
 import com.group7.ecommerce.entity.ProductImage;
+import com.group7.ecommerce.entity.Review;
 import com.group7.ecommerce.mapper.ProductMapper;
 import com.group7.ecommerce.repository.CategoryRepository;
 import com.group7.ecommerce.repository.ProductImageRepository;
 import com.group7.ecommerce.repository.ProductRepository;
+import com.group7.ecommerce.repository.ReviewRepository;
 import com.group7.ecommerce.service.FileStorageService;
 import com.group7.ecommerce.service.ProductService;
 import jakarta.transaction.Transactional;
@@ -17,6 +22,8 @@ import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,6 +43,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
+    private final ReviewRepository reviewRepository;
     private final ProductMapper productMapper;
 
     @Override
@@ -251,5 +259,140 @@ public class ProductServiceImpl implements ProductService {
         if (cell == null) return false;
         if (cell.getCellType() == CellType.BOOLEAN) return cell.getBooleanCellValue();
         return Boolean.parseBoolean(cell.toString().trim());
+    }
+
+    @Override
+    public Page<ProductListItemResponse> getAllProducts(Pageable pageable) {
+        return productRepository.findAllActiveProducts(pageable);
+    }
+    
+    @Override
+    public Page<ProductListItemResponse> getAllProducts(ProductFilterDto filterDto, Pageable pageable) {
+        // Nếu không có filter nào và sắp xếp là mặc định, sử dụng method cũ
+        if (isEmptyFilter(filterDto) && isDefaultSort(filterDto)) {
+            return getAllProducts(pageable);
+        }
+        
+        // Sử dụng custom repository để filter/sort động
+        return productRepository.findProductsWithFilter(filterDto, pageable);
+    }
+    
+    /**
+     * Kiểm tra xem có phải sắp xếp mặc định không
+     */
+    private boolean isDefaultSort(ProductFilterDto filterDto) {
+        if (filterDto == null) return true;
+        
+        String sortBy = filterDto.sortBy();
+        String sortDirection = filterDto.sortDirection();
+        
+        return (sortBy == null || "createdAt".equals(sortBy)) && 
+               (sortDirection == null || "desc".equals(sortDirection));
+    }
+    
+    /**
+     * Kiểm tra xem filter có rỗng hay không (không tính tham số sắp xếp)
+     */
+    private boolean isEmptyFilter(ProductFilterDto filterDto) {
+        if (filterDto == null) return true;
+        
+        return (filterDto.name() == null || filterDto.name().trim().isEmpty()) &&
+               (filterDto.description() == null || filterDto.description().trim().isEmpty()) &&
+               filterDto.minSellingPrice() == null &&
+               filterDto.maxSellingPrice() == null &&
+               filterDto.minImportPrice() == null &&
+               filterDto.maxImportPrice() == null &&
+               filterDto.minStockQuantity() == null &&
+               filterDto.maxStockQuantity() == null &&
+               filterDto.categoryId() == null &&
+               (filterDto.categoryName() == null || filterDto.categoryName().trim().isEmpty()) &&
+               filterDto.isFeatured() == null &&
+               filterDto.createdAfter() == null &&
+               filterDto.createdBefore() == null &&
+               filterDto.updatedAfter() == null &&
+               filterDto.updatedBefore() == null;
+    }
+    
+    @Override
+    public ProductDetailResponse getProductDetail(Long id) {
+        // Lấy product với category
+        Product product = productRepository.findActiveProductByIdWithCategory(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với id: " + id));
+        
+        // Lấy danh sách ảnh
+        List<ProductImage> images = productImageRepository.findByProductId(id);
+        List<ProductDetailResponse.ProductImageInfo> imageInfos = images.stream()
+                .map(img -> new ProductDetailResponse.ProductImageInfo(
+                        (long) img.getId(),
+                        img.getImageUrl(),
+                        img.isPrimary()
+                ))
+                .collect(Collectors.toList());
+        
+        // Lấy danh sách reviews
+        List<Review> reviews = reviewRepository.findByProductIdWithUser(id);
+        List<ProductDetailResponse.ReviewInfo> reviewInfos = reviews.stream()
+                .map(review -> new ProductDetailResponse.ReviewInfo(
+                        review.getId(),
+                        review.getUser().getFullName() != null ? review.getUser().getFullName() : review.getUser().getUsername(),
+                        review.getRating(),
+                        review.getComment(),
+                        review.getCreatedAt()
+                ))
+                .collect(Collectors.toList());
+        
+        // Lấy review statistics
+        Object[] statsResult = reviewRepository.getReviewStatsByProductId(id);
+        ProductDetailResponse.ReviewStats reviewStats = null;
+        
+        if (statsResult != null && statsResult.length > 0) {
+            Double averageRating = (Double) statsResult[0];
+            Long totalReviews = (Long) statsResult[1];
+            Long fiveStars = (Long) statsResult[2];
+            Long fourStars = (Long) statsResult[3];
+            Long threeStars = (Long) statsResult[4];
+            Long twoStars = (Long) statsResult[5];
+            Long oneStar = (Long) statsResult[6];
+            
+            reviewStats = new ProductDetailResponse.ReviewStats(
+                    averageRating,
+                    totalReviews != null ? totalReviews.intValue() : 0,
+                    fiveStars != null ? fiveStars.intValue() : 0,
+                    fourStars != null ? fourStars.intValue() : 0,
+                    threeStars != null ? threeStars.intValue() : 0,
+                    twoStars != null ? twoStars.intValue() : 0,
+                    oneStar != null ? oneStar.intValue() : 0
+            );
+        } else {
+            reviewStats = new ProductDetailResponse.ReviewStats(0.0, 0, 0, 0, 0, 0, 0);
+        }
+        
+        // Tạo category info
+        ProductDetailResponse.CategoryInfo categoryInfo = null;
+        if (product.getCategory() != null) {
+            categoryInfo = new ProductDetailResponse.CategoryInfo(
+                    product.getCategory().getId(),
+                    product.getCategory().getName(),
+                    product.getCategory().getDescription()
+            );
+        }
+        
+        // Tạo ProductDetailResponse
+        return new ProductDetailResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getImportPrice(),
+                product.getSellingPrice(),
+                product.getStockQuantity(),
+                product.isFeatured(),
+                product.isDeleted(),
+                product.getCreatedAt(),
+                product.getUpdatedAt(),
+                categoryInfo,
+                imageInfos,
+                reviewInfos,
+                reviewStats
+        );
     }
 }
