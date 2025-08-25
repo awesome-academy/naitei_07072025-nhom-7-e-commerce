@@ -60,7 +60,7 @@ public class SecurityConfig {
 				.requestMatchers("/api/product").hasAuthority("ADMIN")
 				.requestMatchers("/api/order").hasAnyAuthority("USER","ADMIN")
 				.requestMatchers("/css/**", "/js/**", "/images/**", "/webfonts/**", "/fonts/**").permitAll()
-				.requestMatchers("/admin/**").permitAll()
+				.requestMatchers("/admin/**", "/auth/**").permitAll()
 						.requestMatchers("/suppliers/**").permitAll()
 				.anyRequest().authenticated()
 				);

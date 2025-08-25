@@ -1,86 +1,88 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragment/head :: head}">
     <title>Login</title>
     <link rel="stylesheet" th:href="@{/css/login.css}">
+    <link rel="stylesheet" th:href="@{/css/all.min.css}">
 </head>
-<body class="login-page">
-<div class="container">
-    <div class="login-box">
-        <div class="login-logo">
-            <a href="#"><b>Admin</b>Panel</a>
+<body>
+<div class="login-container">
+    <div class="login-header">
+        <a href="#" class="login-logo">Admin Panel</a>
+        <p class="login-subtitle">Welcome back! Please sign in to your account</p>
+    </div>
+
+    <!-- Success Message -->
+    <div th:if="${successMessage}" class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="close" onclick="this.parentElement.remove();">&times;</button>
+    </div>
+
+    <!-- Error Message -->
+    <div th:if="${errorMessage}" class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="close" onclick="this.parentElement.remove();">&times;</button>
+    </div>
+
+    <form th:action="@{/auth/admin/login}" th:object="${loginDto}" method="post" id="loginForm">
+        <div class="form-group">
+            <input type="text"
+                   th:field="*{emailOrUsername}"
+                   class="form-control"
+                   placeholder="Enter your email or username"
+                   required>
+            <i class="fas fa-user form-control-feedback"></i>
+            <span th:if="${#fields.hasErrors('emailOrUsername')}"
+                  th:errors="*{emailOrUsername}"
+                  class="text-danger"></span>
         </div>
 
-        <div class="login-box-body">
-            <p class="login-box-msg">Welcome back! Please sign in to your account</p>
-
-            <!-- Success Message -->
-            <div th:if="${successMessage}" class="alert alert-success alert-dismissible">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                <i class="fa fa-check-circle"></i>
-                <span th:text="${successMessage}"></span>
-            </div>
-
-            <!-- Error Message -->
-            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                <i class="fa fa-exclamation-triangle"></i>
-                <span th:text="${errorMessage}"></span>
-            </div>
-
-            <form th:action="@{/admin/login}" th:object="${loginDto}" method="post">
-                <div class="form-group has-feedback">
-                    <input type="text"
-                           th:field="*{emailOrUsername}"
-                           class="form-control"
-                           placeholder="Enter your email or username"
-                           required>
-                    <span class="fa fa-user form-control-feedback"></span>
-                    <span th:if="${#fields.hasErrors('emailOrUsername')}"
-                          th:errors="*{emailOrUsername}"
-                          class="text-danger"></span>
-                </div>
-
-                <div class="form-group has-feedback">
-                    <input type="password"
-                           th:field="*{password}"
-                           class="form-control"
-                           placeholder="Enter your password"
-                           required>
-                    <span class="fa fa-lock form-control-feedback"></span>
-                    <span th:if="${#fields.hasErrors('password')}"
-                          th:errors="*{password}"
-                          class="text-danger"></span>
-                </div>
-
-                <div class="row">
-                    <div class="col-xs-8">
-                        <div class="checkbox icheck" style="margin-left: -15px">
-                            <label>
-                                <input type="checkbox"> Remember me
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-xs-4">
-                        <button type="submit" class="btn btn-primary btn-block btn-flat">
-                            <i class="fa fa-sign-in"></i> Sign In
-                        </button>
-                    </div>
-                </div>
-            </form>
-
-            <div class="social-auth-links text-center" style="margin-top: 20px;">
-                <a href="#" class="text-center">
-                    <i class="fa fa-question-circle"></i> Forgot your password?
-                </a>
-            </div>
+        <div class="form-group">
+            <input type="password"
+                   th:field="*{password}"
+                   class="form-control"
+                   placeholder="Enter your password"
+                   required>
+            <i class="fas fa-lock form-control-feedback"></i>
+            <span th:if="${#fields.hasErrors('password')}"
+                  th:errors="*{password}"
+                  class="text-danger"></span>
         </div>
+
+        <div class="form-actions">
+            <label class="remember-me">
+                <input type="checkbox" name="remember">
+                Remember me
+            </label>
+
+            <button type="submit" class="btn-signin">
+                <i class="fas fa-sign-in-alt"></i>
+                Sign In
+            </button>
+        </div>
+    </form>
+
+    <div class="divider">
+        <span>or</span>
+    </div>
+
+    <div class="auth-links">
+        <a th:href="@{/auth/admin/register}" class="btn-register">
+            <i class="fas fa-user-plus"></i>
+            Create New Account
+        </a>
+
+        <a href="#" class="link-forgot">
+            <i class="fas fa-question-circle"></i>
+            Forgot your password?
+        </a>
     </div>
 </div>
 
-<!-- Scripts -->
-<script th:src="@{/js/jquery.min.js}"></script>
-<script th:src="@{/js/bootstrap.min.js}"></script>
 <script th:src="@{/js/login.js}"></script>
+<script th:src="@{/js/jquery.min.js}"></script>
+<script th:src="@{/js/icheck.min.js}"></script>
+
 </body>
 </html>

@@ -4,7 +4,6 @@ import com.group7.ecommerce.dto.request.LoginDto;
 import com.group7.ecommerce.dto.request.UserRegistrationDto;
 import com.group7.ecommerce.dto.request.VerifyOtpDto;
 import com.group7.ecommerce.dto.response.JwtResponse;
-import com.group7.ecommerce.dto.response.UserSessionInfo;
 import com.group7.ecommerce.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -177,9 +176,8 @@ public class AuthController {
             String successMessage = messageSource.getMessage("auth.login.success", null, locale);
 
             // Lưu JWT token và thông tin user vào session
-            UserSessionInfo userSessionInfo = new UserSessionInfo(jwtResponse);
             HttpSession session = request.getSession();
-            session.setAttribute("userSessionInfo", userSessionInfo);
+            session.setAttribute("jwtResponse", jwtResponse);
 
             // Thêm success message
             redirectAttributes.addFlashAttribute("successMessage", successMessage);
