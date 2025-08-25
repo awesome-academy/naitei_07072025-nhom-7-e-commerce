@@ -6,31 +6,28 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import com.group7.ecommerce.dto.request.OrderRequestItem;
-import com.group7.ecommerce.entity.*;
-import com.group7.ecommerce.enums.OrderStatus;
-import com.group7.ecommerce.exception.ResourceNotFoundException;
-import com.group7.ecommerce.repository.*;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.group7.ecommerce.dto.request.OrderRequestItem;
 import com.group7.ecommerce.dto.request.UpdateOrderStatusDto;
 import com.group7.ecommerce.dto.response.OrderDetailResp;
 import com.group7.ecommerce.dto.response.OrderItemResp;
 import com.group7.ecommerce.dto.response.OrderSummaryResp;
-import com.group7.ecommerce.entity.Order;
-import com.group7.ecommerce.entity.OrderItem;
-import com.group7.ecommerce.entity.Reason;
-import com.group7.ecommerce.repository.OrderRepository;
-import com.group7.ecommerce.repository.ReasonRepository;
+import com.group7.ecommerce.entity.*;
+import com.group7.ecommerce.enums.OrderStatus;
+import com.group7.ecommerce.exception.ResourceNotFoundException;
+import com.group7.ecommerce.repository.*;
 import com.group7.ecommerce.service.OrderService;
-import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Service
@@ -55,7 +52,7 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public List<OrderSummaryResp> getAllOrderSummaries(String customerName, OrderStatus status) {
+	public Page<OrderSummaryResp> findOrderSummaries(String customerName, OrderStatus status, Pageable pageable) {
 
 		Specification<Order> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
 
@@ -67,12 +64,9 @@ public class OrderServiceImpl implements OrderService {
 			spec = spec.and(hasStatus(status));
 		}
 
-		Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
-		List<Order> orders = orderRepository.findAll(spec, sort);
+		Page<Order> ordersPage = orderRepository.findAll(spec, pageable);
 
-		return orders.stream()
-				.map(this::mapOrderToSummaryDTO)
-				.collect(Collectors.toList());
+		return ordersPage.map(this::mapOrderToSummaryDTO);
 	}
 
 	@Override
@@ -122,82 +116,82 @@ public class OrderServiceImpl implements OrderService {
 				order.getPaymentMethod(),
 				order.getCreatedAt(),
 				order.getTotalAmount()
-		);
+				);
 	}
 
 	@Transactional
 	@Override
 	public Order createOrder(Long userId,
-							 int shipInfoId,
-							 String paymentMethod,
-							 List<OrderRequestItem> items) {
-			// 1. Validate User
-			User user = userRepository.findById(userId)
-					.orElseThrow(() -> new RuntimeException(getMessage("error.user.not.found")));
+			int shipInfoId,
+			String paymentMethod,
+			List<OrderRequestItem> items) {
+		// 1. Validate User
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new RuntimeException(getMessage("error.user.not.found")));
 
-			// 2. Validate ShipInfo
-			ShipInfo shipInfo = shipInfoRepository.findById(shipInfoId)
-					.orElseThrow(() -> new RuntimeException(getMessage("error.shipping.info.invalid")));
-			if (shipInfo.getUser().getId() != userId) {
-				throw new RuntimeException(getMessage("error.shipping.info.not.belong"));
+		// 2. Validate ShipInfo
+		ShipInfo shipInfo = shipInfoRepository.findById(shipInfoId)
+				.orElseThrow(() -> new RuntimeException(getMessage("error.shipping.info.invalid")));
+		if (shipInfo.getUser().getId() != userId) {
+			throw new RuntimeException(getMessage("error.shipping.info.not.belong"));
+		}
+
+		// 3. Tính tổng tiền + check tồn kho
+		BigDecimal totalAmount = BigDecimal.ZERO;
+		for (OrderRequestItem item : items) {
+			Product product = productRepository.findById(item.getProductId())
+					.orElseThrow(() -> new RuntimeException(
+							getMessage("error.product.not.found", item.getProductId().toString())));
+
+			if (product.isDeleted() || product.getStockQuantity() < item.getQuantity()) {
+				throw new RuntimeException(
+						getMessage("error.product.unavailable.or.not.enough.stock", product.getName()));
 			}
 
-			// 3. Tính tổng tiền + check tồn kho
-			BigDecimal totalAmount = BigDecimal.ZERO;
-			for (OrderRequestItem item : items) {
-				Product product = productRepository.findById(item.getProductId())
-						.orElseThrow(() -> new RuntimeException(
-								getMessage("error.product.not.found", item.getProductId().toString())));
+			BigDecimal subtotal = product.getSellingPrice()
+					.multiply(BigDecimal.valueOf(item.getQuantity()));
+			totalAmount = totalAmount.add(subtotal);
+		}
 
-				if (product.isDeleted() || product.getStockQuantity() < item.getQuantity()) {
-					throw new RuntimeException(
-							getMessage("error.product.unavailable.or.not.enough.stock", product.getName()));
-				}
+		// 4. Tạo Order
+		Order order = new Order();
+		order.setUser(user);
+		order.setShipInfo(shipInfo);
+		order.setPaymentMethod(paymentMethod);
+		order.setStatus(OrderStatus.PENDING); // mặc định "Chờ xác nhận"
+		order.setTotalAmount(totalAmount);
+		order.setCreatedAt(LocalDateTime.now());
+		order.setUpdatedAt(LocalDateTime.now());
+		order = orderRepository.save(order);
 
-				BigDecimal subtotal = product.getSellingPrice()
-						.multiply(BigDecimal.valueOf(item.getQuantity()));
-				totalAmount = totalAmount.add(subtotal);
+		// 5. Tạo Order_Items và cập nhật stock
+		for (OrderRequestItem item : items) {
+			Product product = productRepository.findById(item.getProductId())
+					.orElseThrow(() -> new RuntimeException(
+							getMessage("error.product.not.found", item.getProductId().toString())));
+
+			// Kiểm tra lại stock trước khi trừ (double check)
+			if (product.getStockQuantity() < item.getQuantity()) {
+				throw new RuntimeException(
+						getMessage("error.product.not.enough.stock", product.getName()));
 			}
 
-			// 4. Tạo Order
-			Order order = new Order();
-			order.setUser(user);
-			order.setShipInfo(shipInfo);
-			order.setPaymentMethod(paymentMethod);
-			order.setStatus(OrderStatus.PENDING); // mặc định "Chờ xác nhận"
-			order.setTotalAmount(totalAmount);
-			order.setCreatedAt(LocalDateTime.now());
-			order.setUpdatedAt(LocalDateTime.now());
-			order = orderRepository.save(order);
+			// Trừ stock
+			product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
+			productRepository.save(product);
 
-			// 5. Tạo Order_Items và cập nhật stock
-			for (OrderRequestItem item : items) {
-				Product product = productRepository.findById(item.getProductId())
-						.orElseThrow(() -> new RuntimeException(
-								getMessage("error.product.not.found", item.getProductId().toString())));
+			// Lưu OrderItem
+			OrderItem orderItem = new OrderItem();
+			orderItem.setOrder(order);
+			orderItem.setProduct(product);
+			orderItem.setQuantity(item.getQuantity());
+			orderItem.setPrice(product.getSellingPrice());
+			orderItem.setCreatedAt(LocalDateTime.now());
 
-				// Kiểm tra lại stock trước khi trừ (double check)
-				if (product.getStockQuantity() < item.getQuantity()) {
-					throw new RuntimeException(
-							getMessage("error.product.not.enough.stock", product.getName()));
-				}
+			orderItemRepository.save(orderItem);
+		}
 
-				// Trừ stock
-				product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
-				productRepository.save(product);
-
-				// Lưu OrderItem
-				OrderItem orderItem = new OrderItem();
-				orderItem.setOrder(order);
-				orderItem.setProduct(product);
-				orderItem.setQuantity(item.getQuantity());
-				orderItem.setPrice(product.getSellingPrice());
-				orderItem.setCreatedAt(LocalDateTime.now());
-
-				orderItemRepository.save(orderItem);
-			}
-
-			return order;
+		return order;
 	}
 
 	/**

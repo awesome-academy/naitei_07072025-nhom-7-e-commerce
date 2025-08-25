@@ -2,15 +2,18 @@ package com.group7.ecommerce.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import com.group7.ecommerce.dto.request.OrderRequestItem;
 import com.group7.ecommerce.dto.request.UpdateOrderStatusDto;
 import com.group7.ecommerce.dto.response.OrderDetailResp;
-import com.group7.ecommerce.dto.request.OrderRequestItem;
 import com.group7.ecommerce.dto.response.OrderSummaryResp;
 import com.group7.ecommerce.entity.Order;
 import com.group7.ecommerce.enums.OrderStatus;
 
 public interface OrderService {
-	List<OrderSummaryResp> getAllOrderSummaries(String customerName, OrderStatus status);
+	Page<OrderSummaryResp> findOrderSummaries(String customerName, OrderStatus status, Pageable pageable);
 
 	OrderDetailResp getOrderDetailById(Integer orderId);
 

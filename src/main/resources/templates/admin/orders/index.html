@@ -1,130 +1,139 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layouts/admin_layout :: html}"> 
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragment/head :: head}"></head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+	<header th:replace="~{fragment/header :: header}"></header>
+	<div th:replace="~{fragment/sidebar :: sidebar}"></div>
 
-<div th:fragment="content"> 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Danh sách Đơn hàng</h2>
-    </div>
+	<div class="content-wrapper">
+		<section class="content-header">
+			<h1>Danh sách Đơn hàng<small>Quản lý các đơn hàng</small></h1>
+		</section>
 
-	<div class="card filter-card"> 
-        <div class="card-body">
-            <h5 class="card-title">Bộ lọc tìm kiếm</h5>
-            <form th:action="@{/admin/orders}" method="get" class="filter-form">
-                <div class="form-group">
-                    <label for="customerName" class="form-label">Tên khách hàng</label>
-                    <input type="text" class="form-control" id="customerName" name="customerName" 
-                           th:value="${currentCustomerName}" placeholder="Nhập tên khách hàng...">
-                </div>
-                <div class="form-group">
-                    <label for="status" class="form-label">Trạng thái</label>
-                    <select id="status" name="status" class="form-select">
-                        <option value="">-- Chọn tất cả --</option>
-                        <option th:each="st : ${allStatuses}"
-                                th:value="${st}"
-                                th:text="${st}"
-                                th:selected="${st == currentStatus}">
-                        </option>
-                    </select>
-                </div>
-                <div class="filter-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Lọc</button>
-                    <a th:href="@{/admin/orders}" class="btn btn-secondary"><i class="fas fa-times"></i> Xóa</a>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <div class="card data-table-card">
-        <div class="card-body">
-            <table class="table table-hover data-table">
-                <thead class="table-dark">
-                <tr>
-                    <th>Tên khách hàng</th>
-                    <th>Trạng thái</th>
-                    <th>Phương thức thanh toán</th>
-                    <th>Ngày đặt hàng</th>
-                    <th class="col-total-amount">Tổng tiền</th>
-                    <th class="col-actions">Hành động</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="order : ${orders}">
-                    <td th:text="${order.customerName}">Nguyễn Văn A</td>
-                    <td>
-                        <span th:text="${order.status}"
-                              th:classappend="${order.status.name() == 'PENDING' ? 'badge bg-warning' : 
-                                               order.status.name() == 'DELIVERED' ? 'badge bg-success' : 
-                                               order.status.name() == 'CANCELLED' ? 'badge bg-danger' : 'badge bg-secondary'}">
-                        </span>
-                    </td>
-                    <td th:text="${order.paymentMethod}">COD</td>
-                    <td th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></td>
-                    <td class="col-total-amount" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')} + ' ₫'"></td>
-                    <td class="col-actions">
-                        <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn btn-sm btn-info" title="Xem chi tiết">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <button type="button" class="btn btn-sm btn-warning" title="Cập nhật trạng thái"
-        					data-bs-toggle="modal" th:data-bs-target="'#updateStatusModal-' + ${order.id}">
-    						<i class="fas fa-edit"></i>
-						</button>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    
-    <div th:fragment="modals">
-	    <div th:each="order : ${orders}">
-	        <div class="modal fade" th:id="'updateStatusModal-' + ${order.id}" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
-	            <div class="modal-dialog">
-	                <div class="modal-content">
-	                    <form th:action="@{/admin/orders/update-status/{id}(id=${order.id})}" method="post">
-	                        <div class="modal-header">
-	                            <h5 class="modal-title" id="updateStatusModalLabel" th:text="'Cập nhật đơn hàng #' + ${order.id}"></h5>
-	                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-	                        </div>
-	                        <div class="modal-body">
-	                            <p><strong>Khách hàng:</strong> <span th:text="${order.customerName}"></span></p>
-	                            <p><strong>Trạng thái hiện tại:</strong> <span class="badge bg-info" th:text="${order.status}"></span></p>
-	                            <hr>
-	                            <div class="mb-3">
-	                                <label for="newStatus" class="form-label">Chọn trạng thái mới</label>
-	                                <select id="newStatus" name="newStatus" class="form-select status-selector" th:attr="data-order-id=${order.id}">
-	                                    <option th:each="statusValue : ${T(com.group7.ecommerce.enums.OrderStatus).values()}"
-	                                            th:value="${statusValue}"
-	                                            th:text="${statusValue}"
-	                                            th:selected="${statusValue == order.status}">
-	                                    </option>
-	                                </select>
-	                            </div>
-	                            <div class="d-none reason-block">
-		                            <div class="mb-3">
-		                                <label class="form-label">Chọn lý do</label>
-		                                <select name="reasonId" class="form-select">
-		                                    <option value="">-- Không chọn --</option>
-		                                    <option th:each="reason : ${allReasons}"
-		                                            th:value="${reason.id}"
-		                                            th:text="${reason.description}"></option>
-		                                </select>
-		                            </div>
-		                            <div class="mb-3">
-		                                <label class="form-label">Ghi chú chi tiết (tùy chọn)</label>
-		                                <textarea name="adminNote" class="form-control" rows="3"></textarea>
-		                            </div>
-		                        </div>
-	                        </div>
-	                        <div class="modal-footer">
-	                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-	                            <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Lưu thay đổi</button>
-	                        </div>
-	                    </form>
-	                </div>
-	            </div>
-	        </div>
-	    </div>
+		<section class="content">
+			<div class="row">
+				<div class="col-xs-12">
+					<div class="box">
+						<div class="box-body">
+							<form th:action="@{/admin/orders}" method="get" class="form-inline">
+								<div class="form-group">
+									<input type="text" name="customerName" class="form-control" placeholder="Nhập tên khách hàng..." th:value="${currentCustomerName}">
+								</div>
+								<div class="form-group" style="margin-left: 10px;">
+									<select name="status" class="form-control">
+										<option value="">-- Chọn tất cả trạng thái --</option>
+										<option th:each="st : ${allStatuses}" th:value="${st}" th:text="${st}" th:selected="${st == currentStatus}"></option>
+									</select>
+								</div>
+								<div class="form-group" style="margin-left: 10px;">
+									<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Lọc</button>
+								</div>
+								<div class="form-group" style="margin-left: 5px;">
+									<a th:href="@{/admin/orders}" class="btn btn-default" title="Xóa bộ lọc"><i class="fa fa-times"></i></a>
+								</div>
+							</form>
+							<br>
+
+							<table class="table table-bordered table-striped">
+								<thead>
+								<tr>
+									<th>Tên khách hàng</th>
+									<th>Trạng thái</th>
+									<th>Phương thức TT</th>
+									<th>Ngày đặt</th>
+									<th>Tổng tiền</th>
+									<th>Hành động</th>
+								</tr>
+								</thead>
+								<tbody>
+								<tr th:each="order : ${ordersPage.content}">
+									<td th:text="${order.customerName}"></td>
+									<td>
+										<span class="label" th:text="${order.status}" th:classappend="${order.status.name() == 'DELIVERED' ? 'label-success' : (order.status.name() == 'PENDING' ? 'label-warning' : (order.status.name() == 'CANCELLED' or order.status.name() == 'REJECTED' ? 'label-danger' : 'label-info'))}"></span>
+									</td>
+									<td th:text="${order.paymentMethod}"></td>
+									<td th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></td>
+									<td th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+									<td>
+										<a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn btn-info btn-xs" title="Xem chi tiết"><i class="fa fa-eye"></i></a>
+										<button type="button" class="btn btn-warning btn-xs" title="Cập nhật trạng thái" data-toggle="modal" th:data-target="'#updateStatusModal-' + ${order.id}">
+											<i class="fa fa-edit"></i>
+										</button>
+									</td>
+								</tr>
+								<tr th:if="${ordersPage.empty}">
+									<td colspan="6" class="text-center">Không tìm thấy đơn hàng nào</td>
+								</tr>
+								</tbody>
+							</table>
+
+							<div th:if="${ordersPage.totalPages > 1}" class="text-center">
+								<ul class="pagination">
+									<li th:class="${ordersPage.first} ? 'disabled' : ''">
+										<a th:href="@{/admin/orders(page=${ordersPage.number - 1}, customerName=${currentCustomerName}, status=${currentStatus})}">&laquo;</a>
+									</li>
+									<li th:each="i : ${#numbers.sequence(0, ordersPage.totalPages - 1)}" th:class="${i == ordersPage.number} ? 'active' : ''">
+										<a th:href="@{/admin/orders(page=${i}, customerName=${currentCustomerName}, status=${currentStatus})}" th:text="${i + 1}"></a>
+									</li>
+									<li th:class="${ordersPage.last} ? 'disabled' : ''">
+										<a th:href="@{/admin/orders(page=${ordersPage.number + 1}, customerName=${currentCustomerName}, status=${currentStatus})}">&raquo;</a>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	</div>
+
+	<footer th:replace="~{fragment/footer :: footer}"></footer>
+</div>
+
+<div th:each="order : ${ordersPage.content}">
+	<div class="modal fade" th:id="'updateStatusModal-' + ${order.id}" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<form th:action="@{/admin/orders/update-status/{id}(id=${order.id})}" method="post">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" th:text="'Cập nhật đơn hàng #' + ${order.id}"></h4>
+					</div>
+					<div class="modal-body">
+						<p><strong>Khách hàng:</strong> <span th:text="${order.customerName}"></span></p>
+						<hr>
+						<div class="form-group">
+							<label>Chọn trạng thái mới</label>
+							<select name="newStatus" class="form-control status-selector">
+								<option th:each="s : ${T(com.group7.ecommerce.enums.OrderStatus).values()}" th:value="${s}" th:text="${s}" th:selected="${s == order.status}"></option>
+							</select>
+						</div>
+						<div class="reason-block d-none">
+							<div class="form-group">
+								<label>Chọn lý do</label>
+								<select name="reasonId" class="form-control">
+									<option value="">-- Không chọn --</option>
+									<option th:each="reason : ${allReasons}" th:value="${reason.id}" th:text="${reason.description}"></option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label>Ghi chú chi tiết (tùy chọn)</label>
+								<textarea name="adminNote" class="form-control" rows="3"></textarea>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+						<button type="submit" class="btn btn-success"><i class="fa fa-save"></i> Lưu thay đổi</button>
+					</div>
+				</form>
+			</div>
+		</div>
 	</div>
 </div>
+
+<div th:replace="~{fragment/script :: script}"></div>
+
+</body>
 </html>
