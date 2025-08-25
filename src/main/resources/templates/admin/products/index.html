@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragment/head :: head}"></head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+  <header th:replace="~{fragment/header :: header}"></header>
+  <div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <h1 th:text="#{page.products}">Products</h1>
+    </section>
+
+    <section class="content">
+
+      <div class="box">
+
+        <!-- Box header -->
+        <div class="box-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <h3 class="box-title" th:text="#{page.products.list}">Product List</h3>
+          </div>
+          <div class="mt-2">
+            <a th:href="@{/admin/products/import}" class="btn btn-primary btn-sm">
+              <i class="fa fa-upload"></i>
+              <span th:text="#{page.products.import}">Import Product</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Box body -->
+        <div class="box-body">
+          <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+
+            <!-- Controls -->
+            <div class="row">
+              <div class="col-sm-8">
+                <div class="dataTables_length" id="example1_length">
+                  <label>
+                    <span th:text="#{page.products.show}">Show</span>
+                    <select class="form-control input-sm" onchange="changeSize(this.value)">
+                      <option th:value="10" th:selected="${size == 10}">10</option>
+                      <option th:value="25" th:selected="${size == 25}">25</option>
+                      <option th:value="50" th:selected="${size == 50}">50</option>
+                      <option th:value="100" th:selected="${size == 100}">100</option>
+                    </select>
+                    <span th:text="#{page.products.entries}">entries</span>
+                  </label>
+                </div>
+              </div>
+              <div class="col-sm-4">
+                <div id="example1_filter" class="dataTables_filter">
+                  <label>
+                    <span th:text="#{page.products.search}">Search</span>:
+                    <input type="search" id="productSearch" class="form-control input-sm"
+                           th:placeholder="#{page.products.search}" aria-controls="example1">
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="row">
+              <div class="col-sm-12">
+                <table id="productTable" class="table table-bordered table-striped dataTable" role="grid" aria-describedby="example1_info">
+                  <thead>
+                  <tr>
+                    <th>
+                      <a th:href="@{|/admin/products?page=0&size=${size}&sortField=name&sortDirection=${sortField == 'name' && sortDirection == 'asc' ? 'desc' : 'asc'}|}"
+                         style="color:#000; text-decoration:none;">
+                        <span th:text="#{page.products.name}">Name</span>
+                        <span th:if="${sortField == 'name'}" th:text="${sortDirection == 'asc' ? '▲' : '▼'}"></span>
+                      </a>
+                    </th>
+                    <th>
+                      <a th:href="@{|/admin/products?page=0&size=${size}&sortField=importPrice&sortDirection=${sortField == 'importPrice' && sortDirection == 'asc' ? 'desc' : 'asc'}|}"
+                         style="color:#000; text-decoration:none;">
+                        <span th:text="#{page.products.importPrice}">Import Price</span>
+                        <span th:if="${sortField == 'importPrice'}" th:text="${sortDirection == 'asc' ? '▲' : '▼'}"></span>
+                      </a>
+                    </th>
+                    <th>
+                      <a th:href="@{|/admin/products?page=0&size=${size}&sortField=sellingPrice&sortDirection=${sortField == 'sellingPrice' && sortDirection == 'asc' ? 'desc' : 'asc'}|}"
+                         style="color:#000; text-decoration:none;">
+                        <span th:text="#{page.products.sellingPrice}">Selling Price</span>
+                        <span th:if="${sortField == 'sellingPrice'}" th:text="${sortDirection == 'asc' ? '▲' : '▼'}"></span>
+                      </a>
+                    </th>
+                    <th>
+                      <a th:href="@{|/admin/products?page=0&size=${size}&sortField=stockQuantity&sortDirection=${sortField == 'stockQuantity' && sortDirection == 'asc' ? 'desc' : 'asc'}|}"
+                         style="color:#000; text-decoration:none;">
+                        <span th:text="#{page.products.stockQuantity}">Stock Quantity</span>
+                        <span th:if="${sortField == 'stockQuantity'}" th:text="${sortDirection == 'asc' ? '▲' : '▼'}"></span>
+                      </a>
+                    </th>
+                    <th>
+                      <a th:href="@{|/admin/products?page=0&size=${size}&sortField=isFeatured&sortDirection=${sortField == 'isFeatured' && sortDirection == 'asc' ? 'desc' : 'asc'}|}"
+                         style="color:#000; text-decoration:none;">
+                        <span th:text="#{page.products.featured}">Featured</span>
+                        <span th:if="${sortField == 'isFeatured'}" th:text="${sortDirection == 'asc' ? '▲' : '▼'}"></span>
+                      </a>
+                    </th>
+                    <th>
+                      <a th:href="@{|/admin/products?page=0&size=${size}&sortField=isDeleted&sortDirection=${sortField == 'isDeleted' && sortDirection == 'asc' ? 'desc' : 'asc'}|}"
+                         style="color:#000; text-decoration:none;">
+                        <span th:text="#{page.products.hidden}">Hidden</span>
+                        <span th:if="${sortField == 'isDeleted'}" th:text="${sortDirection == 'asc' ? '▲' : '▼'}"></span>
+                      </a>
+                    </th>
+                    <th>
+                      <a th:href="@{|/admin/products?page=0&size=${size}&sortField=createdAt&sortDirection=${sortField == 'createdAt' && sortDirection == 'asc' ? 'desc' : 'asc'}|}"
+                         style="color:#000; text-decoration:none;">
+                        <span th:text="#{page.products.createdAt}">Created At</span>
+                        <span th:if="${sortField == 'createdAt'}" th:text="${sortDirection == 'asc' ? '▲' : '▼'}"></span>
+                      </a>
+                    </th>
+                    <th><span th:text="#{page.products.actions}">Actions</span></th>
+                  </tr>
+                  </thead>
+
+                  <tbody>
+                  <tr th:each="product : ${products}">
+                    <td th:text="${product.name}"></td>
+                    <td th:text="${product.importPrice}"></td>
+                    <td th:text="${product.sellingPrice}"></td>
+                    <td th:text="${product.stockQuantity}"></td>
+                    <td>
+                      <i th:class="${product.isFeatured} ? 'fa fa-check text-success' : 'fa fa-times text-danger'"></i>
+                    </td>
+                    <td>
+                      <i th:class="${product.isDeleted} ? 'fa fa-check text-danger' : 'fa fa-times text-success'"></i>
+                    </td>
+                    <td th:text="${#temporals.format(product.createdAt, 'HH:mm dd/MM/yyyy')}"></td>
+                    <td>
+                      <!-- View -->
+                      <a th:href="@{|/admin/products/${product.id}|}" class="btn btn-info btn-sm" th:title="#{page.products.view}">
+                        <i class="fa fa-eye"></i>
+                      </a>
+                      <!-- Delete -->
+                      <a th:href="@{|/admin/products/delete/${product.id}|}" class="btn btn-danger btn-sm"
+                         th:title="#{page.products.delete}"
+                         th:onclick="'return confirm(\'' + #{page.products.confirmDelete} + '\');'">
+                        <i class="fa fa-trash"></i>
+                      </a>
+                    </td>
+                  </tr>
+                  <tr th:if="${#lists.isEmpty(products)}">
+                    <td colspan="8" style="text-align: center;" th:text="#{page.products.noResult}">No products found</td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="row" th:if="${totalPages > 0}">
+              <div class="col-sm-12">
+                <ul class="pagination">
+                  <!-- Previous -->
+                  <li th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a th:if="${currentPage != 0}"
+                       th:href="${sortField != null} ?
+                         @{|/admin/products?page=${currentPage - 1}&size=${size}&sortField=${sortField}&sortDirection=${sortDirection}|} :
+                         @{|/admin/products?page=${currentPage - 1}&size=${size}|}"
+                       th:text="#{page.products.previous}">Previous</a>
+                    <span th:if="${currentPage == 0}" th:text="#{page.products.previous}">Previous</span>
+                  </li>
+
+                  <!-- Page numbers -->
+                  <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                      th:classappend="${i == currentPage} ? 'active'">
+                    <a th:href="${sortField != null} ?
+                         @{|/admin/products?page=${i}&size=${size}&sortField=${sortField}&sortDirection=${sortDirection}|} :
+                         @{|/admin/products?page=${i}&size=${size}|}"
+                       th:text="${i + 1}"></a>
+                  </li>
+
+                  <!-- Next -->
+                  <li th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                    <a th:if="${currentPage + 1 < totalPages}"
+                       th:href="${sortField != null} ?
+                         @{|/admin/products?page=${currentPage + 1}&size=${size}&sortField=${sortField}&sortDirection=${sortDirection}|} :
+                         @{|/admin/products?page=${currentPage + 1}&size=${size}|}"
+                       th:text="#{page.products.next}">Next</a>
+                    <span th:if="${currentPage + 1 >= totalPages}" th:text="#{page.products.next}">Next</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+</div>
+
+<div th:replace="~{fragment/script :: script}"></div>
+<script src="/js/table_list.js"></script>
+
+<!-- expose Thymeleaf variables -->
+<script th:inline="javascript">
+  window.sortField = /*[[${sortField}]]*/ null;
+  window.sortDirection = /*[[${sortDirection}]]*/ null;
+</script>
+
+</body>
+</html>
