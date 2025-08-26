@@ -1,6 +1,7 @@
 package com.group7.ecommerce.utils.helper;
 
 import com.group7.ecommerce.enums.Role;
+import com.group7.ecommerce.utils.CustomUserDetails;
 import com.group7.ecommerce.utils.constant.UserConstants;
 import com.group7.ecommerce.utils.constant.message.ErrorMessages;
 import com.group7.ecommerce.dto.request.UserRegistrationDto;
@@ -9,6 +10,7 @@ import com.group7.ecommerce.repository.UserRepository;
 import com.group7.ecommerce.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -101,11 +103,11 @@ public class UserHelper {
     }
 
     /**
-     * Tìm kiếm Email hoặc email
+     * Tìm kiếm Email hoặc Username hoặc throw exception
      */
     public User findUserByEmailOrUsernameOrThrow(String emailOrUsername) {
         return userRepository.findByEmailOrUsername(emailOrUsername, emailOrUsername)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found after authentication"));
+                .orElseThrow(() -> new UsernameNotFoundException(ErrorMessages.USER_NOT_FOUND));
     }
 
     /**
@@ -118,5 +120,19 @@ public class UserHelper {
             log.error("Error getting total users count", e);
             return 0L;
         }
+    }
+    /*
+     * Tìm kiếm userId hoặc throw exception
+     */
+    public User findUserByIdOrThrow(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException(ErrorMessages.USER_NOT_FOUND));
+    }
+
+    /**
+     * Lấy user ID từ authentication
+     */
+    public Integer getCurrentUserId(Authentication authentication) {
+        return ((CustomUserDetails) authentication.getPrincipal()).getId().intValue();
     }
 }
