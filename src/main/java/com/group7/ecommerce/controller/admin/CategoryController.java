@@ -80,4 +80,15 @@ public class CategoryController {
 		redirectAttributes.addFlashAttribute("successMessage", "Cập nhật danh mục thành công!");
 		return "redirect:/admin/categories";
 	}
+
+	@PostMapping("/delete/{id}")
+	public String deleteCategory(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+		try {
+			categoryService.deleteById(id);
+			redirectAttributes.addFlashAttribute("successMessage", "Xóa danh mục thành công!");
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("errorMessage", "Không thể xóa danh mục này. Lỗi: " + e.getMessage());
+		}
+		return "redirect:/admin/categories";
+	}
 }
