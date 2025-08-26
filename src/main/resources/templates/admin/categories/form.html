@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragment/head :: head}"></head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+    <header th:replace="~{fragment/header :: header}"></header>
+    <div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header">
+            <h1 th:text="${categoryDto.id == null} ? 'Tạo danh mục mới' : 'Chỉnh sửa danh mục'"></h1>
+        </section>
+        <section class="content">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="box box-primary">
+                        <form th:action="@{/admin/categories/save}" 
+                              th:object="${categoryDto}" method="post">
+                            <div class="box-body">
+                                <div class="form-group">
+                                    <label for="name">Tên danh mục</label>
+                                    <input type="text" id="name" th:field="*{name}" class="form-control" placeholder="Nhập tên danh mục...">
+                                    <small class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="description">Mô tả</label>
+                                    <textarea id="description" th:field="*{description}" class="form-control" rows="4" placeholder="Nhập mô tả chi tiết..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="parentId">Danh mục cha</label>
+                                    <select id="parentId" th:field="*{parentId}" class="form-control">
+                                        <option value="">-- Là danh mục gốc --</option>
+                                        <option th:each="cat : ${allCategories}"
+                                                th:value="${cat.id}"
+                                                th:text="${cat.name}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="box-footer">
+                                <a th:href="@{/admin/categories}" class="btn btn-default"><i class="fa fa-arrow-left"></i> Quay lại</a>
+                                <button type="submit" class="btn btn-success pull-right">
+                                    <i class="fa fa-save"></i> Tạo mới
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer th:replace="~{fragment/footer :: footer}"></footer>
+</div>
+<div th:replace="~{fragment/script :: script}"></div>
+</body>
+</html>

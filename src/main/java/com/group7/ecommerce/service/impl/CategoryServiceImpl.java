@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.group7.ecommerce.dto.request.CategoryDto;
 import com.group7.ecommerce.dto.response.CategoryResp;
 import com.group7.ecommerce.entity.Category;
+import com.group7.ecommerce.exception.ResourceNotFoundException;
 import com.group7.ecommerce.repository.CategoryRepository;
 import com.group7.ecommerce.service.CategoryService;
 
@@ -39,8 +40,27 @@ public class CategoryServiceImpl implements CategoryService {
 		return categoryRepository.findAll();
 	}
 
-	@Override public Category findById(Long id) { return null; }
-	@Override public Category save(CategoryDto categoryDto) { return null; }
+	@Override
+	public Category findById(Long id) {
+		return categoryRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
+	}
+
+	@Override
+	public Category save(CategoryDto categoryDto) {
+		Category category = new Category();
+		category.setName(categoryDto.getName());
+		category.setDescription(categoryDto.getDescription());
+
+		if (categoryDto.getParentId() != null) {
+			Category parent = findById(categoryDto.getParentId());
+			category.setParent(parent);
+		}
+
+		return categoryRepository.save(category);
+	}
+
+
 	@Override public Category update(Long id, CategoryDto categoryDto) { return null; }
 	@Override public void deleteById(Long id) {}
 
