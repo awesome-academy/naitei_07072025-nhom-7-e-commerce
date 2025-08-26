@@ -4,6 +4,7 @@ import com.group7.ecommerce.dto.request.cart.AddToCartRequest;
 import com.group7.ecommerce.dto.request.cart.UpdateCartRequest;
 import com.group7.ecommerce.dto.response.cart.AddToCartResponse;
 import com.group7.ecommerce.dto.response.cart.UpdateCartResponse;
+import com.group7.ecommerce.dto.response.cart.ViewCartResponse;
 import com.group7.ecommerce.service.CartService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -72,6 +73,19 @@ public class CartController {
                     .message(getMessage("openapi.response.500"))
                     .build();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<ViewCartResponse> viewCart(Authentication authentication) {
+        log.info("User {} requesting to view cart", authentication.getName());
+
+        ViewCartResponse response = cartService.viewCart(authentication);
+
+        if (response.success()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
