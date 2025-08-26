@@ -17,10 +17,17 @@ import java.util.zip.ZipInputStream;
 @Service
 public class FileStorageServiceImpl implements FileStorageService {
 
-    private static final Path UPLOAD_DIR = Path.of("temp");
-    private static final Path STATIC_IMAGES_DIR = Path.of("src/main/resources/static/images");
+    private static final Path TEMP_DIR = Path.of("temp");
+    private final Path uploadDir;
     @Value("${app.valid-image-extensions}")
     private String validImageExtensions;
+
+    public FileStorageServiceImpl(@Value("${app.upload-images-dir}") String uploadDirPath) throws IOException {
+        this.uploadDir = Path.of(uploadDirPath);
+        if (!Files.exists(uploadDir)) {
+            Files.createDirectories(uploadDir);
+        }
+    }
 
     @Override
     public Path unzipImages(MultipartFile zipFile) {
@@ -28,16 +35,15 @@ public class FileStorageServiceImpl implements FileStorageService {
             throw new RuntimeException("Vui lòng chọn file ZIP ảnh.");
         }
         try {
-            // Tạo thư mục nếu chưa có
-            if (!Files.exists(UPLOAD_DIR)) {
-                Files.createDirectories(UPLOAD_DIR);
+            if (!Files.exists(TEMP_DIR)) {
+                Files.createDirectories(TEMP_DIR);
             }
 
             // Giải nén
             try (ZipInputStream zis = new ZipInputStream(zipFile.getInputStream())) {
                 ZipEntry entry;
                 while ((entry = zis.getNextEntry()) != null) {
-                    Path filePath = UPLOAD_DIR.resolve(entry.getName());
+                    Path filePath = TEMP_DIR.resolve(entry.getName());
                     if (entry.isDirectory()) {
                         Files.createDirectories(filePath);
                     } else {
@@ -47,7 +53,7 @@ public class FileStorageServiceImpl implements FileStorageService {
                     zis.closeEntry();
                 }
             }
-            return UPLOAD_DIR;
+            return TEMP_DIR;
         } catch (IOException e) {
             throw new RuntimeException("Lỗi giải nén file ZIP", e);
         }
@@ -55,42 +61,36 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public String copyImageToStatic(String sourcePath, String imageName) throws IOException {
-        String newFileName = generateUniqueFileName(imageName);
-        Path targetFile = STATIC_IMAGES_DIR.resolve(newFileName);
+        String extension = imageName.contains(".") ? imageName.substring(imageName.lastIndexOf(".")) : "";
+        String newFileName = UUID.randomUUID() + extension;
 
-        if (!Files.exists(targetFile.getParent())) {
-            Files.createDirectories(targetFile.getParent());
-        }
-
+        Path targetFile = uploadDir.resolve(newFileName);
         Files.copy(Paths.get(sourcePath), targetFile, StandardCopyOption.REPLACE_EXISTING);
+
         return "/images/" + newFileName;
     }
 
     @Override
     public String copyImageToStatic(MultipartFile file) throws IOException {
-        String originalName = file.getOriginalFilename();
-        if (originalName == null || originalName.trim().isEmpty()) {
-            originalName = "unnamed.dat";
-        } else {
-            originalName = StringUtils.cleanPath(originalName);
-        }
+        String originalName = Optional.ofNullable(file.getOriginalFilename()).orElse("unnamed.dat");
+        originalName = StringUtils.cleanPath(originalName);
 
-        String newFileName = generateUniqueFileName(originalName);
-        Path targetFile = STATIC_IMAGES_DIR.resolve(newFileName);
+        String extension = originalName.contains(".") ?
+                originalName.substring(originalName.lastIndexOf(".")) : "";
+        String newFileName = UUID.randomUUID() + extension;
 
-        if (!Files.exists(targetFile.getParent())) {
-            Files.createDirectories(targetFile.getParent());
-        }
-
+        Path targetFile = uploadDir.resolve(newFileName);
         Files.copy(file.getInputStream(), targetFile, StandardCopyOption.REPLACE_EXISTING);
+
         return "/images/" + newFileName;
     }
 
-
     @Override
     public void deleteImage(String imageUrl) throws IOException {
-        Path path = STATIC_IMAGES_DIR.resolve(Paths.get(imageUrl).getFileName());
-        Files.deleteIfExists(path);
+        if (imageUrl.startsWith("/images/")) {
+            Path path = uploadDir.resolve(imageUrl.replace("/images/", ""));
+            Files.deleteIfExists(path); // Xóa file thật
+        }
     }
 
     @Override
@@ -111,13 +111,5 @@ public class FileStorageServiceImpl implements FileStorageService {
         String lower = fileName.toLowerCase();
         List<String> validExtensions = List.of(validImageExtensions.split(","));
         return validExtensions.stream().anyMatch(lower::endsWith);
-    }
-
-    private String generateUniqueFileName(String originalName) {
-        String extension = Optional.ofNullable(originalName)
-                .filter(name -> name.contains("."))
-                .map(name -> name.substring(name.lastIndexOf('.')))
-                .orElse("");
-        return UUID.randomUUID() + extension;
     }
 }

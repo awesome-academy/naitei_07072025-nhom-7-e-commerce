@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -17,12 +18,21 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${app.default-product-image-url:/static/images/product-default.jpg}")
     private String defaultProductImageUrl;
 
+    @Value("${app.upload-images-dir}")
+    private String uploadImagesDir;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(adminSessionInterceptor)
                 .addPathPatterns("/**");
     }
-    
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Map URL /images/** tới folder upload trên disk
+        registry.addResourceHandler("/images/**")
+                .addResourceLocations("file:" + uploadImagesDir + "/");
+    }
+
     @Bean("defaultProductImageUrl")
     public String defaultProductImageUrl() {
         return defaultProductImageUrl;

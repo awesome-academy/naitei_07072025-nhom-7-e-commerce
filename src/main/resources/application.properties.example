@@ -74,4 +74,4 @@ app.valid-image-extensions=.jpg,.jpeg,.png,.gif,.bmp,.webp
 # ===============================================
 
 app.default-product-image-url=/static/images/product-default.jpg
-
+app.upload-images-dir=uploads/images
