@@ -19,12 +19,13 @@ public record ProductUpdateDto(
         @DecimalMin(value = "0.0", inclusive = false, message = "Giá bán phải > 0")
         BigDecimal sellingPrice,
 
+        @NotNull(message = "Số lượng tồn không được để trống")
         @Min(value = 0, message = "Số lượng phải >= 0")
-        int stockQuantity,
+        Integer stockQuantity,
 
         @NotNull(message = "Danh mục không được để trống")
         Long categoryId,
 
-        boolean isFeatured,
-        boolean isDeleted
+        Boolean isFeatured,
+        Boolean isDeleted
 ) { }
