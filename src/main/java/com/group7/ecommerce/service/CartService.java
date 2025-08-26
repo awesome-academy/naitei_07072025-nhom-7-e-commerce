@@ -1,7 +1,9 @@
 package com.group7.ecommerce.service;
 
 import com.group7.ecommerce.dto.request.cart.AddToCartRequest;
+import com.group7.ecommerce.dto.request.cart.UpdateCartRequest;
 import com.group7.ecommerce.dto.response.cart.AddToCartResponse;
+import com.group7.ecommerce.dto.response.cart.UpdateCartResponse;
 import org.springframework.security.core.Authentication;
 
 public interface CartService {
@@ -11,4 +13,8 @@ public interface CartService {
      */
     AddToCartResponse addToCart(Authentication authentication, AddToCartRequest request);
 
+    /**
+     * Cập nhật sản phẩm trong giỏ hàng
+     */
+    UpdateCartResponse updateCartItem(Authentication authentication, UpdateCartRequest request);
 }
