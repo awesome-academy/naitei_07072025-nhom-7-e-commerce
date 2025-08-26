@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<meta charset="UTF-8">
+<head th:replace="~{fragment/head :: head}"></head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+  <header th:replace="~{fragment/header :: header}"></header>
+  <div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <h1>
+        <span th:text="#{page.products}"></span>
+        <small th:text="#{page.products.import}"></small>
+      </h1>
+    </section>
+
+    <section class="content">
+
+      <!-- Hiển thị thông báo -->
+      <div th:if="${success}" class="alert alert-success" role="alert">
+        <span th:text="${success}"></span>
+      </div>
+
+      <div th:if="${error}" class="alert alert-danger" role="alert">
+        <span th:text="${error}"></span>
+      </div>
+
+      <div class="box box-primary">
+        <div class="box-header with-border">
+          <h3 class="box-title">Form</h3>
+        </div>
+        <!-- /.box-header -->
+        <!-- form start -->
+        <form role="form" th:action="@{/admin/products/import}" method="post" enctype="multipart/form-data">
+          <div class="box-body">
+
+            <!-- Upload Excel -->
+            <div class="form-group">
+              <label for="excelFile">Upload Excel File</label>
+              <input type="file" class="form-control" id="excelFile" name="excelFile" accept=".xls,.xlsx">
+              <p class="help-block">Chỉ nhận file Excel (.xls, .xlsx)</p>
+            </div>
+
+            <!-- Upload Zip -->
+            <div class="form-group">
+              <label for="zipFile">Upload Zip of Images</label>
+              <input type="file" class="form-control" id="zipFile" name="imageZip" accept=".zip">
+              <p class="help-block">Chỉ nhận file nén ZIP chứa ảnh</p>
+            </div>
+
+          </div>
+          <!-- /.box-body -->
+
+          <div class="box-footer">
+            <button type="submit" class="btn btn-primary">Upload All</button>
+          </div>
+        </form>
+
+      </div>
+    </section>
+  </div>
+
+</div>
+
+<div th:replace="~{fragment/script :: script}"></div>
+</body>
+</html>
