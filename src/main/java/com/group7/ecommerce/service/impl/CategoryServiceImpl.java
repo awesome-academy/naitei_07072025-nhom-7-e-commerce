@@ -61,7 +61,26 @@ public class CategoryServiceImpl implements CategoryService {
 	}
 
 
-	@Override public Category update(Long id, CategoryDto categoryDto) { return null; }
+	@Override
+	public Category update(Long id, CategoryDto categoryDto) {
+		Category categoryToUpdate = findById(id);
+
+		categoryToUpdate.setName(categoryDto.getName());
+		categoryToUpdate.setDescription(categoryDto.getDescription());
+
+		if (categoryDto.getParentId() != null) {
+			if (categoryDto.getParentId().equals(id)) {
+				throw new IllegalArgumentException("Một danh mục không thể là danh mục cha của chính nó.");
+			}
+			Category parent = findById(categoryDto.getParentId());
+			categoryToUpdate.setParent(parent);
+		} else {
+			categoryToUpdate.setParent(null);
+		}
+
+		return categoryRepository.save(categoryToUpdate);
+	}
+
 	@Override public void deleteById(Long id) {}
 
 	private CategoryResp buildCategoryTree(Category category, Map<Long, List<Category>> childrenMap) {

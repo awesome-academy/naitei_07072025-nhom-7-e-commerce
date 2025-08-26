@@ -14,7 +14,7 @@
             <div class="row">
                 <div class="col-md-8">
                     <div class="box box-primary">
-                        <form th:action="@{/admin/categories/save}" 
+                        <form th:action="${categoryDto.id == null} ? @{/admin/categories/save} : @{/admin/categories/update/{id}(id=${categoryDto.id})}" 
                               th:object="${categoryDto}" method="post">
                             <div class="box-body">
                                 <div class="form-group">
@@ -32,7 +32,8 @@
                                         <option value="">-- Là danh mục gốc --</option>
                                         <option th:each="cat : ${allCategories}"
                                                 th:value="${cat.id}"
-                                                th:text="${cat.name}">
+                                                th:text="${cat.name}"
+                                                th:disabled="${categoryDto.id != null and categoryDto.id == cat.id}">
                                         </option>
                                     </select>
                                 </div>
@@ -40,7 +41,8 @@
                             <div class="box-footer">
                                 <a th:href="@{/admin/categories}" class="btn btn-default"><i class="fa fa-arrow-left"></i> Quay lại</a>
                                 <button type="submit" class="btn btn-success pull-right">
-                                    <i class="fa fa-save"></i> Tạo mới
+                                    <i class="fa fa-save"></i> 
+                                    <span th:text="${categoryDto.id == null} ? 'Tạo mới' : 'Cập nhật'"></span>
                                 </button>
                             </div>
                         </form>

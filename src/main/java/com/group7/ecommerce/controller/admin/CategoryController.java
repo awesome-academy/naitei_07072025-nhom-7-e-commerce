@@ -3,13 +3,11 @@ package com.group7.ecommerce.controller.admin;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.group7.ecommerce.dto.request.CategoryDto;
+import com.group7.ecommerce.entity.Category;
 import com.group7.ecommerce.service.CategoryService;
 
 import jakarta.validation.Valid;
@@ -47,6 +45,39 @@ public class CategoryController {
 		categoryService.save(categoryDto);
 
 		redirectAttributes.addFlashAttribute("successMessage", "Tạo danh mục thành công!");
+		return "redirect:/admin/categories";
+	}
+
+	@GetMapping("/edit/{id}")
+	public String showEditForm(@PathVariable Long id, Model model) {
+		Category category = categoryService.findById(id);
+
+		CategoryDto dto = new CategoryDto();
+		dto.setId(category.getId());
+		dto.setName(category.getName());
+		dto.setDescription(category.getDescription());
+		if (category.getParent() != null) {
+			dto.setParentId(category.getParent().getId());
+		}
+
+		model.addAttribute("categoryDto", dto);
+		model.addAttribute("allCategories", categoryService.findAll());
+		return "admin/categories/form";
+	}
+
+	@PostMapping("/update/{id}")
+	public String updateCategory(@PathVariable Long id,
+			@Valid @ModelAttribute("categoryDto") CategoryDto categoryDto,
+			BindingResult result,
+			RedirectAttributes redirectAttributes,
+			Model model) {
+		if (result.hasErrors()) {
+			model.addAttribute("allCategories", categoryService.findAll());
+			return "admin/categories/form";
+		}
+
+		categoryService.update(id, categoryDto);
+		redirectAttributes.addFlashAttribute("successMessage", "Cập nhật danh mục thành công!");
 		return "redirect:/admin/categories";
 	}
 }

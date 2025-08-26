@@ -15,7 +15,7 @@
         </td>
         <td th:text="${category.description}"></td>
         <td>
-            <a href="#" class="btn btn-warning btn-xs disabled"><i class="fa fa-edit"></i> Sửa</a>
+            <a th:href="@{/admin/categories/edit/{id}(id=${category.id})}" class="btn btn-warning btn-xs"><i class="fa fa-edit"></i> Sửa</a>
             <a href="#" class="btn btn-danger btn-xs disabled"><i class="fa fa-trash"></i> Xóa</a>
         </td>
     </tr>
