@@ -201,6 +201,14 @@ public class ProductServiceImpl implements ProductService {
                 .map(productMapper::toResponse);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ProductResponse getProductById(Long id) {
+        return productRepository.findById(id)
+                .map(productMapper::toResponse)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+    }
+
     private ProductDto mapRowToDto(Row row) {
         String name = getCellString(row.getCell(0));
         String description = getCellString(row.getCell(1));

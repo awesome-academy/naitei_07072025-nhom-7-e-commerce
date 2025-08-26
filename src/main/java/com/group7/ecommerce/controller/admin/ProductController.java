@@ -87,6 +87,14 @@ public class ProductController {
         return "admin/products/index";
     }
 
+    @GetMapping("/{id}")
+    public String getProductById(@PathVariable Long id, Model model) {
+        ProductResponse product = productService.getProductById(id);
+        model.addAttribute("product", product);
+        return "admin/products/detail";
+    }
+
+
     @PutMapping(value = "/info/{id}")
     public String updateProduct(
             @PathVariable Long id,

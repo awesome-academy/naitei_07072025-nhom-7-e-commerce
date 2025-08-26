@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<meta charset="UTF-8">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="icon" href="https://images.squarespace-cdn.com/content/v1/6151fc1de9760e17a20b7128/fe78d701-101b-4da8-ae9f-62c854214941/3S_140220_LOGO_-39.png" type="image/png">
+    <title>Store</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+    <!-- AdminLTE CDN -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/font-awesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/AdminLTE.min.css}">
+    <link rel="stylesheet" th:href="@{/css/_all-skins.min.css}">
+    <link rel="stylesheet" th:href="@{/css/product_detail.css}">
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    <header th:replace="~{fragment/header :: header}"></header>
+    <div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header">
+            <h1 th:text="#{page.products}"></h1>
+        </section>
+
+        <section class="content">
+
+            <div th:if="${success}" class="alert alert-success" role="alert">
+                <span th:text="${success}"></span>
+            </div>
+
+            <!-- Box: Thông tin sản phẩm -->
+            <div class="box box-info">
+                <div class="box-header with-border">
+                    <h3 class="box-title" th:text="#{product.detailInfo}">Chi tiết sản phẩm</h3>
+                </div>
+                <div class="box-body product-details">
+
+                    <label th:text="#{product.id}">ID</label>
+                    <p th:text="${product.id}"></p>
+
+                    <label th:text="#{product.name}">Tên sản phẩm</label>
+                    <p th:text="${product.name}"></p>
+
+                    <label th:text="#{product.description}">Mô tả</label>
+                    <p th:text="${product.description}"></p>
+
+                    <label th:text="#{product.importPrice}">Giá nhập</label>
+                    <p th:text="${#numbers.formatDecimal(product.importPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></p>
+
+                    <label th:text="#{product.sellingPrice}">Giá bán</label>
+                    <p th:text="${#numbers.formatDecimal(product.sellingPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></p>
+
+                    <label th:text="#{product.stockQuantity}">Số lượng tồn</label>
+                    <p th:text="${product.stockQuantity}"></p>
+
+                    <label th:text="#{product.category}">Danh mục</label>
+                    <p th:text="${product.category}"></p>
+
+                    <label th:text="#{product.featured}">Nổi bật</label>
+                    <p th:text="${product.featured ? 'Có' : 'Không'}"></p>
+
+                    <label th:text="#{product.deleted}">Đã ẩn</label>
+                    <p th:text="${product.deleted ? 'Có' : 'Không'}"></p>
+
+                    <label th:text="#{product.createdAt}">Ngày tạo</label>
+                    <p th:text="${#temporals.format(product.createdAt, 'dd/MM/yyyy HH:mm')}"></p>
+                </div>
+            </div>
+
+            <!-- Box: Hình ảnh sản phẩm -->
+            <div class="box box-info product-images">
+                <div class="box-header with-border">
+                    <h3 class="box-title" th:text="#{product.images}">Hình ảnh sản phẩm</h3>
+                </div>
+                <div class="images-container">
+                    <img th:each="img : ${product.imageUrls}"
+                         th:src="@{${img}}"
+                         class="product-img"
+                         alt="Product Image"/>
+                </div>
+            </div>
+
+            <div>
+                <a th:href="@{|/admin/products/update/${product.id}|}" class="btn btn-primary" th:text="#{product.updateInfo}"> Chỉnh sửa Thông Tin</a>
+            </div>
+
+        </section>
+    </div>
+
+</div>
+
+<div th:replace="~{fragment/script :: script}"></div>
+</body>
+</html>

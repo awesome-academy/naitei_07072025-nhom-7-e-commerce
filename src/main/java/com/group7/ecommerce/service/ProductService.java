@@ -12,4 +12,5 @@ public interface ProductService {
     void updateImageProduct(Long id, MultipartFile[] images);
     Page<ProductResponse> getAllPaged(int page, int size);
     Page<ProductResponse> getAllPagedAndSorted(int page, int size, String sortField, String sortDirection);
+    ProductResponse getProductById(Long id);
 }

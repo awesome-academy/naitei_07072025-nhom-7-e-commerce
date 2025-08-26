@@ -1,0 +1,26 @@
+.images-container {
+    display: flex;         /* xếp ảnh ngang */
+    flex-wrap: wrap;       /* xuống hàng khi tràn */
+    gap: 10px;             /* khoảng cách giữa các ảnh */
+    margin-top: 10px;
+}
+
+.product-img {
+    width: 150px;          /* cố định chiều rộng */
+    height: auto;         /* cố định chiều cao */
+    object-fit: contain;   /* giữ tỉ lệ ảnh, không crop */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Một chút style cho phần chi tiết sản phẩm */
+.product-details label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+}
+
+.product-details p {
+    margin: 0 0 5px 0;
+}
