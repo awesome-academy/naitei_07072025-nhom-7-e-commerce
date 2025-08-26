@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragment/head :: head}"></head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+    <header th:replace="~{fragment/header :: header}"></header>
+    <div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header">
+            <h1 th:text="#{admin.categories.title}">Quản lý Danh mục</h1>
+        </section>
+
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header">
+                            <h3 class="box-title" th:text="#{admin.categories.box.title}">Tất cả danh mục</h3>
+                            <div class="box-tools">
+                                <a th:href="@{/admin/categories/add}" class="btn btn-success btn-sm">
+                                    <i class="fa fa-plus"></i>
+                                    <span th:text="#{admin.categories.button.add}">Thêm danh mục mới</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th style="width: 50%;" th:text="#{admin.categories.table.header.name}">Tên danh mục</th>
+                                    <th th:text="#{admin.categories.table.header.description}">Mô tả</th>
+                                    <th style="width: 150px;" th:text="#{admin.categories.table.header.actions}">Hành động</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    <th:block th:each="category : ${categoryTree}">
+                                        <tr th:replace="~{admin/categories/_category-row :: row(category=${category}, level=0, parentId=null)}"></tr>
+                                    </th:block>
+                                    <tr th:if="${#lists.isEmpty(categoryTree)}">
+                                        <td colspan="3" class="text-center" th:text="#{admin.categories.table.empty}">Chưa có danh mục nào.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer th:replace="~{fragment/footer :: footer}"></footer>
+</div>
+<div th:replace="~{fragment/script :: script}"></div>
+</body>
+</html>

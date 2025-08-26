@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<th:block th:fragment="row(category, level, parentId)">
+
+    <tr th:classappend="${!#lists.isEmpty(category.children) ? 'parent-row' : ''} + (${parentId != null} ? ' child-of-' + ${parentId} : '')"
+        th:style="${parentId != null} ? 'display: none;'"
+        th:data-id="${category.id}">
+
+        <td>
+            <span th:style="'padding-left: ' + (${level} * 25) + 'px;'">
+                <i th:if="${!#lists.isEmpty(category.children)}" class="fa fa-plus-square-o toggle-children" style="cursor: pointer; margin-right: 5px; color: #3c8dbc;"></i>
+                <span th:text="${category.name}"></span>
+            </span>
+        </td>
+        <td th:text="${category.description}"></td>
+
+        <td>
+            <a href="#" class="btn btn-warning btn-xs disabled">
+                <i class="fa fa-edit"></i>
+                <span th:text="#{action.edit}">Sửa</span>
+            </a>
+
+            <a href="#" class="btn btn-danger btn-xs disabled">
+                <i class="fa fa-trash"></i>
+                <span th:text="#{action.delete}">Xóa</span>
+            </a>
+        </td>
+    </tr>
+
+    <th:block th:each="child : ${category.children}">
+        <tr th:replace="~{admin/categories/_category-row :: row(category=${child}, level=${level + 1}, parentId=${category.id})}">
+        </tr>
+    </th:block>
+
+</th:block>
+
+</body>
+</html>
