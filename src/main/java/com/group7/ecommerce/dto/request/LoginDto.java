@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginDto {
-    @NotBlank(message = "{emailOrUsername.notblank}")
+    @NotBlank(message = "{user.username.notblank}")
     private String emailOrUsername;
 
-    @NotBlank(message = "{password.notblank}")
+    @NotBlank(message = "{user.password.notblank}")
     private String password;
 
 }

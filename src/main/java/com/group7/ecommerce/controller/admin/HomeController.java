@@ -1,10 +1,12 @@
 package com.group7.ecommerce.controller.admin;
 
 import com.group7.ecommerce.dto.request.UpdateProfileRequest;
+import com.group7.ecommerce.dto.request.ChangePasswordDto;
 import com.group7.ecommerce.dto.response.JwtResponse;
 import com.group7.ecommerce.dto.response.ShowProfileResponse;
 import com.group7.ecommerce.dto.response.UpdateProfileResponse;
 import com.group7.ecommerce.service.UserService;
+import com.group7.ecommerce.utils.helper.ChangePasswordHelper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -26,6 +29,7 @@ public class HomeController {
 
     private final UserService userService;
     private final MessageSource messageSource;
+    private final ChangePasswordHelper changePasswordHelper;
 
     @GetMapping("/home")
     public String admin(HttpServletRequest request, Model model) {
@@ -51,6 +55,11 @@ public class HomeController {
             ShowProfileResponse showProfileResponse = userService.showProfileAdmin(currentUser);
             model.addAttribute("currentUser", currentUser);
             model.addAttribute("profileUser", showProfileResponse);
+
+            if (!model.containsAttribute("changePasswordDto")) {
+                model.addAttribute("changePasswordDto", new ChangePasswordDto("", "", ""));
+            }
+
             log.info("Admin profile loaded successfully for: {}", currentUser.getUsername());
 
         } catch (Exception e) {
@@ -158,6 +167,63 @@ public class HomeController {
                         messageSource.getMessage("admin.profile.error.message", null, locale));
                 return "redirect:/admin/info";
             }
+        }
+    }
+
+    // ========== CHỨC NĂNG ĐỔI MẬT KHẨU ==========
+    @PatchMapping("/change-password")
+    public String processChangePassword(@Valid @ModelAttribute("changePasswordDto") ChangePasswordDto dto,
+                                        BindingResult bindingResult,
+                                        Model model,
+                                        RedirectAttributes redirectAttributes,
+                                        HttpServletRequest request,
+                                        Locale locale) {
+
+        JwtResponse currentUser = (JwtResponse) request.getAttribute("currentUser");
+        String currentUserName = currentUser.getUsername();
+        log.info("Processing password change for user: {}", currentUserName);
+
+        // Check password match manually
+        if (!dto.newPassword().equals(dto.confirmNewPassword())) {
+            bindingResult.rejectValue("confirmNewPassword", "password.mismatch",
+                    "Passwords do not match");
+        }
+
+        // Validation errors
+        if (bindingResult.hasErrors()) {
+            log.warn("Password change validation failed for user: {}", currentUserName);
+
+            bindingResult.getAllErrors().forEach(error -> {
+                log.debug("Validation error - Field: {}, Message: {}",
+                        error instanceof FieldError ? ((FieldError) error).getField() : "global",
+                        error.getDefaultMessage());
+            });
+
+            // Load profile data and return with errors
+            changePasswordHelper.loadProfileDataWithErrors(request, model, locale, dto, null);
+            return "admin/info/index";
+        }
+
+        try {
+            userService.changePassword(currentUser.getEmail(), dto, locale);
+            log.info("Password change successful for user: {}", currentUserName);
+
+            String successMessage = messageSource.getMessage("auth.change.password.success", null, locale);
+            redirectAttributes.addFlashAttribute("successMessage", successMessage);
+
+            return "redirect:/admin/info";
+
+        } catch (Exception e) {
+            log.error("Password change failed for user: {} - Error: {}", currentUserName, e.getMessage());
+
+            String errorMessage;
+            if (e.getMessage().contains("Current password is incorrect")) {
+                errorMessage = "Current password is incorrect. Please try again.";
+            } else {
+                errorMessage = e.getMessage();
+            }
+            changePasswordHelper.loadProfileDataWithErrors(request, model, locale, dto, errorMessage);
+            return "admin/info/index";
         }
     }
 

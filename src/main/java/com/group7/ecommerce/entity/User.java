@@ -28,7 +28,9 @@ public class User {
     private String username;
 
     @NotBlank(message = "{user.password.notblank}")
-    @Size(min = 6, message = "{user.password.size}")
+    @Size(min = 8, message = "{user.password.size}")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$",
+            message = "{user.password.pattern}")
     @Column(nullable = false, length = 255)
     private String password;
 
