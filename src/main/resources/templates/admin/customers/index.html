@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragment/head :: head}"></head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    <header th:replace="~{fragment/header :: header}"></header>
+    <div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header">
+            <h1 th:text="#{page.customers}">Customers</h1>
+        </section>
+
+        <section class="content">
+
+            <div class="box">
+
+                <!-- Box header -->
+                <div class="box-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="box-title" th:text="#{page.customers.list}">Customer List</h3>
+                    </div>
+                </div>
+
+                <!-- Box body -->
+                <div class="box-body">
+                    <div id="example1_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+
+                        <!-- Controls -->
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <div class="dataTables_length" id="example1_length">
+                                    <label>
+                                        <span th:text="#{page.customers.show}">Show</span>
+                                        <select class="form-control input-sm" onchange="changeSize(this.value)">
+                                            <option th:value="10" th:selected="${size == 10}">10</option>
+                                            <option th:value="25" th:selected="${size == 25}">25</option>
+                                            <option th:value="50" th:selected="${size == 50}">50</option>
+                                            <option th:value="100" th:selected="${size == 100}">100</option>
+                                        </select>
+                                        <span th:text="#{page.customers.entries}">entries</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div id="example1_filter" class="dataTables_filter">
+                                    <label>
+                                        <span th:text="#{page.customers.search}">Search</span>:
+                                        <input type="search" id="customerSearch" class="form-control input-sm"
+                                               th:placeholder="#{page.customers.search}" aria-controls="example1">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <table id="customerTable" class="table table-bordered table-striped dataTable" role="grid">
+                            <thead>
+                            <tr>
+                                <th><span th:text="#{page.customers.id}">ID</span></th>
+                                <th><span th:text="#{page.customers.fullName}">Full Name</span></th>
+                                <th><span th:text="#{page.customers.username}">Username</span></th>
+                                <th><span th:text="#{page.customers.email}">Email</span></th>
+                                <th><span th:text="#{page.customers.phone}">Phone</span></th>
+                                <th><span th:text="#{page.customers.emailVerified}">Email Verified</span></th>
+                                <th><span th:text="#{page.customers.createdAt}">Created At</span></th>
+                                <th><span th:text="#{page.customers.actions}">Actions</span></th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr th:each="customer : ${customers}">
+                                <td th:text="${customer.id}"></td>
+                                <td th:text="${customer.fullName}"></td>
+                                <td th:text="${customer.username}"></td>
+                                <td th:text="${customer.email}"></td>
+                                <td th:text="${customer.phone}"></td>
+                                <td>
+                                    <i th:class="${customer.emailVerified} ? 'fa fa-check text-success' : 'fa fa-times text-danger'"></i>
+                                </td>
+                                <td th:text="${#temporals.format(customer.createdAt, 'HH:mm dd/MM/yyyy')}"></td>
+                                <td>
+                                    <a th:href="@{|/admin/customers/${customer.id}|}" class="btn btn-info btn-sm" th:title="#{page.customers.view}">
+                                        <i class="fa fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(customers)}">
+                                <td colspan="8" style="text-align: center;" th:text="#{page.customers.noResult}">No customers found</td>
+                            </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Pagination -->
+                        <div class="row" th:if="${totalPages > 0}">
+                            <div class="col-sm-12">
+                                <ul class="pagination">
+                                    <!-- Previous -->
+                                    <li th:classappend="${currentPage == 0} ? 'disabled'">
+                                        <a th:if="${currentPage != 0}"
+                                           th:href="@{|/admin/customers?page=${currentPage - 1}&size=${size}|}"
+                                           th:text="#{page.customers.previous}">Previous</a>
+                                        <span th:if="${currentPage == 0}" th:text="#{page.customers.previous}">Previous</span>
+                                    </li>
+
+                                    <!-- Page numbers -->
+                                    <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                                        th:classappend="${i == currentPage} ? 'active'">
+                                        <a th:href="@{|/admin/customers?page=${i}&size=${size}|}" th:text="${i + 1}"></a>
+                                    </li>
+
+                                    <!-- Next -->
+                                    <li th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                                        <a th:if="${currentPage + 1 < totalPages}"
+                                           th:href="@{|/admin/customers?page=${currentPage + 1}&size=${size}|}"
+                                           th:text="#{page.customers.next}">Next</a>
+                                        <span th:if="${currentPage + 1 >= totalPages}" th:text="#{page.customers.next}">Next</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+</div>
+
+<div th:replace="~{fragment/script :: script}"></div>
+<script src="/js/customer_list.js"></script>
+
+</body>
+</html>
