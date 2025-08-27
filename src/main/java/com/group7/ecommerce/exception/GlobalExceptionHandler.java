@@ -338,35 +338,59 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Helper method để lấy localized message
+     * Xử lý lỗi không tìm thấy user
      */
-    private String getMessage(String key, Object... args) {
-        try {
-            Locale locale = LocaleContextHolder.getLocale();
-            return messageSource.getMessage(key, args, locale);
-        } catch (Exception e) {
-            // Fallback to default message if localization fails
-            return getDefaultMessage(key);
-        }
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiResponse<String>> handleUserNotFoundException(
+            UserNotFoundException ex) {
+
+        log.warn("User not found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage()));
     }
 
     /**
-     * Default messages khi không có MessageSource
+     * Xử lý lỗi không tìm thấy sản phẩm
      */
-    private String getDefaultMessage(String key) {
-        return switch (key) {
-            case "error.validation.fields" -> "Dữ liệu không hợp lệ";
-            case "error.validation.parameters" -> "Tham số không hợp lệ";
-            case "error.malformed.json" -> "Dữ liệu JSON không hợp lệ";
-            case "error.endpoint.not.found" -> "Không tìm thấy endpoint";
-            case "error.file.too.large" -> "File tải lên quá lớn";
-            case "error.bad.credentials" -> "Email/Username hoặc mật khẩu không đúng";
-            case "error.access.denied" -> "Bạn không có quyền truy cập tài nguyên này";
-            case "error.authentication.required" -> "Vui lòng đăng nhập để tiếp tục";
-            case "error.internal.server" -> "Có lỗi xảy ra trong hệ thống";
-            case "error.unexpected" -> "Đã xảy ra lỗi không mong muốn, vui lòng thử lại sau";
-            default -> "Đã xảy ra lỗi";
-        };
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<ApiResponse<String>> handleProductNotFoundException(
+            ProductNotFoundException ex) {
+
+        log.warn("Product not found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    /**
+     * Xử lý lỗi không đủ hàng trong kho
+     */
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ApiResponse<String>> handleInsufficientStockException(
+            InsufficientStockException ex) {
+
+        log.warn("Insufficient stock: {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    /**
+     * Xử lý lỗi sản phẩm đã có trong giỏ hàng
+     */
+    @ExceptionHandler(ProductAlreadyInCartException.class)
+    public ResponseEntity<ApiResponse<String>> handleProductAlreadyInCartException(
+            ProductAlreadyInCartException ex) {
+
+        log.warn("Product already in cart: {}", ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    /**
+     * Helper method để lấy localized message
+     */
+    private String getMessage(String key, Object... args) {
+            Locale locale = LocaleContextHolder.getLocale();
+            return messageSource.getMessage(key, args, locale);
     }
 
     /**
