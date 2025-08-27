@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragment/head :: head}"></head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+    <header th:replace="~{fragment/header :: header}"></header>
+    <div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header">
+            <h1 th:text="#{admin.suggestions.detail.title(${suggestion.id})}">Chi tiết Gợi ý Sản phẩm #...</h1>
+            <ol class="breadcrumb">
+                <li><a th:href="@{/admin/suggestions}"><i class="fa fa-lightbulb-o"></i> <span th:text="#{admin.suggestions.breadcrumb.home}">Gợi ý</span></a></li>
+                <li class="active" th:text="#{admin.suggestions.breadcrumb.detail}">Chi tiết</li>
+            </ol>
+        </section>
+
+        <section class="content">
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="box box-primary">
+                        <div class="box-header with-border"><h3 class="box-title" th:text="#{admin.suggestions.detail.box.info}">Thông tin Gợi ý</h3></div>
+                        <div class="box-body">
+                            <strong><i class="fa fa-cube margin-r-5"></i> <span th:text="#{admin.suggestions.detail.label.productName}">Tên sản phẩm được gợi ý</span></strong>
+                            <p class="text-muted" th:text="${suggestion.productName}"></p>
+                            <hr>
+                            <strong><i class="fa fa-align-left margin-r-5"></i> <span th:text="#{admin.suggestions.detail.label.description}">Mô tả của người dùng</span></strong>
+                            <p class="text-muted" th:text="${suggestion.description}"></p>
+                            <hr>
+                            <strong><i class="fa fa-folder-open margin-r-5"></i> <span th:text="#{admin.suggestions.detail.label.category}">Danh mục được gợi ý</span></strong>
+                            <p class="text-muted" th:text="${suggestion.suggestedCategory}"></p>
+                            <hr>
+                            <strong><i class="fa fa-user margin-r-5"></i> <span th:text="#{admin.suggestions.detail.label.submittedBy}">Người gửi</span></strong>
+                            <p class="text-muted" th:text="${suggestion.submittedByUsername}"></p>
+                            <hr>
+                            <strong><i class="fa fa-info-circle margin-r-5"></i> <span th:text="#{admin.suggestions.detail.label.status}">Trạng thái hiện tại</span></strong>
+                            <p><span class="label" th:text="${suggestion.status}"
+                                     th:classappend="${suggestion.status.name() == 'APPROVED' ? 'label-success' : (suggestion.status.name() == 'PENDING' ? 'label-warning' : 'label-danger')}">
+                               </span></p>
+
+                            <div th:if="${suggestion.status.name() == 'REJECTED' and suggestion.rejectionReason != null and !suggestion.rejectionReason.isEmpty()}">
+                                <hr>
+                                <strong><i class="fa fa-ban margin-r-5 text-danger"></i> <span th:text="#{admin.suggestions.detail.label.rejectionReason}">Lý do từ chối</span></strong>
+                                <p class="text-muted" th:text="${suggestion.rejectionReason}"></p>
+                            </div>
+                        </div>
+                        <div class="box-footer">
+                            <a th:href="@{/admin/suggestions}" class="btn btn-default"><i class="fa fa-arrow-left"></i> <span th:text="#{action.back}">Quay lại</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer th:replace="~{fragment/footer :: footer}"></footer>
+</div>
+
+<div th:replace="~{fragment/script :: script}"></div>
+
+</body>
+</html>
