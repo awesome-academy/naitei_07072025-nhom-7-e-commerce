@@ -31,7 +31,6 @@ public class CartController {
             if (!response.success()) {
                 return ResponseEntity.badRequest().body(response);
             }
-
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {

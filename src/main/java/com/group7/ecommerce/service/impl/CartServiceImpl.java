@@ -19,7 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -62,24 +61,30 @@ public class CartServiceImpl implements CartService {
             Optional<CartItem> existingCartItem = cartItemRepository
                     .findByCartAndProduct(cart, product);
 
+            CartItem cartItem;
             if (existingCartItem.isPresent()) {
-                return AddToCartResponse.builder()
-                        .success(false)
-                        .message(getMessage("error.product.exists.carts"))
-                        .build();
+                // Product already exists in cart - update quantity
+                cartItem = existingCartItem.get();
+                int newQuantity = cartItem.getQuantity() + request.quantity();
+                // Update existing cart item quantity
+                cartItem.setQuantity(newQuantity);
+
+                log.info("Updated quantity for product {} in cart for user {}. New quantity: {}",
+                        request.productId(), userId, newQuantity);
+            } else {
+                // Create new cart item
+                cartItem = new CartItem();
+                cartItem.setCart(cart);
+                cartItem.setProduct(product);
+                cartItem.setQuantity(request.quantity());
+
+                log.info("Added new product {} to cart for user {}", request.productId(), userId);
+
             }
-
-            // Create new cart item
-            CartItem cartItem = new CartItem();
-            cartItem.setCart(cart);
-            cartItem.setProduct(product);
-            cartItem.setQuantity(request.quantity());
-
             CartItem savedCartItem = cartItemRepository.save(cartItem);
 
             // Update quantity of product in the stock
             product.setStockQuantity(product.getStockQuantity() - request.quantity());
-            product.setUpdatedAt(LocalDateTime.now());
             productRepository.save(product);
 
             // Get total items in cart
