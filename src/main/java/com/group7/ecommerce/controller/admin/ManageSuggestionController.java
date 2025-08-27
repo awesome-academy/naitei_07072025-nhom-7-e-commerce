@@ -6,13 +6,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.group7.ecommerce.dto.request.SuggestionReviewDto;
 import com.group7.ecommerce.dto.response.ProductSuggestionResp;
 import com.group7.ecommerce.service.ProductSuggestionService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -37,6 +38,21 @@ public class ManageSuggestionController {
 		ProductSuggestionResp suggestion = suggestionService.getSuggestionById(id);
 		model.addAttribute("suggestion", suggestion);
 
+		model.addAttribute("reviewDto", new SuggestionReviewDto());
+
 		return "admin/suggestions/detail";
+	}
+
+	@PatchMapping("/{id}")
+	public String reviewSuggestion(
+			@PathVariable Integer id,
+			@Valid @ModelAttribute("reviewDto") SuggestionReviewDto reviewDto,
+			RedirectAttributes redirectAttributes) {
+
+		suggestionService.reviewSuggestion(id, reviewDto);
+		redirectAttributes.addFlashAttribute("successMessageKey", "suggestion.review.success");
+		redirectAttributes.addFlashAttribute("successMessageArgs", id);
+
+		return "redirect:/admin/suggestions";
 	}
 }

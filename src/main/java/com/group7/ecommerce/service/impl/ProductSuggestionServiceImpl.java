@@ -1,6 +1,5 @@
 package com.group7.ecommerce.service.impl;
 
-
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
@@ -9,9 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.group7.ecommerce.dto.request.ProductSuggestionDto;
+import com.group7.ecommerce.dto.request.SuggestionReviewDto;
 import com.group7.ecommerce.dto.response.ProductSuggestionResp;
 import com.group7.ecommerce.entity.ProductSuggestion;
 import com.group7.ecommerce.entity.User;
+import com.group7.ecommerce.enums.ProductSuggestionStatus;
 import com.group7.ecommerce.exception.ResourceNotFoundException;
 import com.group7.ecommerce.repository.ProductSuggestionRepository;
 import com.group7.ecommerce.service.ProductSuggestionService;
@@ -29,6 +30,7 @@ public class ProductSuggestionServiceImpl implements ProductSuggestionService {
 	private final MessageSource messageSource;
 
 	@Override
+	@Transactional
 	public void createSuggestion(ProductSuggestionDto request, User currentUser) {
 		ProductSuggestion suggestion = new ProductSuggestion();
 		suggestion.setProductName(request.getProductName());
@@ -53,5 +55,28 @@ public class ProductSuggestionServiceImpl implements ProductSuggestionService {
 					String message = messageSource.getMessage("exception.suggestion.notFound", new Object[]{id}, LocaleContextHolder.getLocale());
 					return new ResourceNotFoundException(message);
 				});
+	}
+
+	@Override
+	@Transactional
+	public void reviewSuggestion(Integer id, SuggestionReviewDto request) {
+		ProductSuggestion suggestion = suggestionRepository.findById(id)
+				.orElseThrow(() -> {
+					String message = messageSource.getMessage("exception.suggestion.notFound", new Object[]{id}, LocaleContextHolder.getLocale());
+					return new ResourceNotFoundException(message);
+				});
+
+		if (request.getStatus() == ProductSuggestionStatus.REJECTED &&
+				(request.getRejectionReason() == null || request.getRejectionReason().isBlank())) {
+			String message = messageSource.getMessage("exception.suggestion.rejectionReason.required", null, LocaleContextHolder.getLocale());
+			throw new IllegalArgumentException(message);
+		}
+
+		suggestion.setStatus(request.getStatus());
+		suggestion.setRejectionReason(
+				request.getStatus() == ProductSuggestionStatus.REJECTED ? request.getRejectionReason() : null
+				);
+
+		suggestionRepository.save(suggestion);
 	}
 }
