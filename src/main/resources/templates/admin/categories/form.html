@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragment/head :: head}"></head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+    <header th:replace="~{fragment/header :: header}"></header>
+    <div th:replace="~{fragment/sidebar :: sidebar}"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header">
+            <h1 th:text="${categoryDto.id == null} ? #{admin.categories.form.title.add} : #{admin.categories.form.title.edit}">
+                Tạo/Chỉnh sửa danh mục
+            </h1>
+        </section>
+        <section class="content">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="box box-primary">
+                        <form th:action="@{/admin/categories/save}"
+                              th:object="${categoryDto}" method="post">
+                            <div class="box-body">
+                                <div class="form-group">
+                                    <label for="name" th:text="#{admin.categories.form.label.name}">Tên danh mục</label>
+                                    <input type="text" id="name" th:field="*{name}" class="form-control"
+                                           th:placeholder="#{admin.categories.form.placeholder.name}">
+                                    <small class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="description" th:text="#{admin.categories.form.label.description}">Mô tả</label>
+                                    <textarea id="description" th:field="*{description}" class="form-control" rows="4"
+                                              th:placeholder="#{admin.categories.form.placeholder.description}"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="parentId" th:text="#{admin.categories.form.label.parent}">Danh mục cha</label>
+                                    <select id="parentId" th:field="*{parentId}" class="form-control">
+                                        <option value="" th:text="#{admin.categories.form.select.root}">-- Là danh mục gốc --</option>
+                                        <option th:each="cat : ${allCategories}"
+                                                th:value="${cat.id}"
+                                                th:text="${cat.name}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="box-footer">
+                                <a th:href="@{/admin/categories}" class="btn btn-default">
+                                    <i class="fa fa-arrow-left"></i>
+                                    <span th:text="#{action.back}">Quay lại</span>
+                                </a>
+                                <button type="submit" class="btn btn-success pull-right">
+                                    <i class="fa fa-save"></i>
+                                    <span th:text="${categoryDto.id == null} ? #{action.create} : #{action.update}">
+                                        Tạo mới/Cập nhật
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer th:replace="~{fragment/footer :: footer}"></footer>
+</div>
+<div th:replace="~{fragment/script :: script}"></div>
+</body>
+</html>
