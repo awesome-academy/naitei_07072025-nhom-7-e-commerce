@@ -6,11 +6,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.group7.ecommerce.dto.request.OrderRequestItem;
+import com.group7.ecommerce.dto.request.CreateOrderRequest;
 import com.group7.ecommerce.dto.request.UpdateOrderStatusDto;
 import com.group7.ecommerce.dto.response.OrderDetailResp;
 import com.group7.ecommerce.dto.response.OrderSummaryResp;
 import com.group7.ecommerce.entity.Order;
 import com.group7.ecommerce.enums.OrderStatus;
+import org.springframework.security.core.Authentication;
 
 public interface OrderService {
 	Page<OrderSummaryResp> findOrderSummaries(String customerName, OrderStatus status, Pageable pageable);
@@ -47,4 +49,7 @@ public interface OrderService {
 	 */
 
 	Order createOrder(Long userId, int shipInfoId, String paymentMethod, List<OrderRequestItem> items);
+
+	OrderDetailResp createDirectOrder(Authentication authentication, CreateOrderRequest request);
+
 }

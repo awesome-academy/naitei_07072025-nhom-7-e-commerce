@@ -2,32 +2,37 @@ package com.group7.ecommerce.service.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import com.group7.ecommerce.dto.request.CreateOrderRequest;
+import com.group7.ecommerce.dto.request.OrderRequestItem;
+import com.group7.ecommerce.entity.*;
+import com.group7.ecommerce.enums.OrderStatus;
+import com.group7.ecommerce.repository.*;
+import com.group7.ecommerce.utils.CustomUserDetails;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import com.group7.ecommerce.dto.request.OrderRequestItem;
 import com.group7.ecommerce.dto.request.UpdateOrderStatusDto;
 import com.group7.ecommerce.dto.response.OrderDetailResp;
 import com.group7.ecommerce.dto.response.OrderItemResp;
 import com.group7.ecommerce.dto.response.OrderSummaryResp;
-import com.group7.ecommerce.entity.*;
-import com.group7.ecommerce.enums.OrderStatus;
 import com.group7.ecommerce.exception.ResourceNotFoundException;
-import com.group7.ecommerce.repository.*;
+import com.group7.ecommerce.repository.OrderRepository;
+import com.group7.ecommerce.repository.ReasonRepository;
 import com.group7.ecommerce.service.OrderService;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Service
@@ -119,12 +124,12 @@ public class OrderServiceImpl implements OrderService {
 				);
 	}
 
-	@Transactional
+	@Transactional(readOnly = false)
 	@Override
 	public Order createOrder(Long userId,
-			int shipInfoId,
-			String paymentMethod,
-			List<OrderRequestItem> items) {
+							 int shipInfoId,
+							 String paymentMethod,
+							 List<OrderRequestItem> items) {
 		// 1. Validate User
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException(getMessage("error.user.not.found")));
@@ -165,6 +170,8 @@ public class OrderServiceImpl implements OrderService {
 		order = orderRepository.save(order);
 
 		// 5. Tạo Order_Items và cập nhật stock
+
+		List<OrderItem> savedItems = new ArrayList<>();
 		for (OrderRequestItem item : items) {
 			Product product = productRepository.findById(item.getProductId())
 					.orElseThrow(() -> new RuntimeException(
@@ -189,10 +196,13 @@ public class OrderServiceImpl implements OrderService {
 			orderItem.setCreatedAt(LocalDateTime.now());
 
 			orderItemRepository.save(orderItem);
+			savedItems.add(orderItemRepository.save(orderItem));
 		}
 
+		order.setOrderItems(savedItems);
 		return order;
 	}
+
 
 	/**
 	 * Helper method to get localized message
@@ -232,5 +242,39 @@ public class OrderServiceImpl implements OrderService {
 				orderItem.getQuantity(),
 				orderItem.getPrice()
 				);
+	}
+
+	@Transactional(readOnly = false)
+	@Override
+	public OrderDetailResp createDirectOrder(Authentication authentication, CreateOrderRequest request) {
+		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+		// Kiểm tra danh sách sản phẩm
+		if (request.getItems() == null || request.getItems().isEmpty()) {
+			throw new RuntimeException(getMessage("error.product.list.required"));
+		}
+
+		// Chuyển đổi OrderItemRequest thành OrderRequestItem
+		List<OrderRequestItem> orderItems = request.getItems().stream()
+				.map(item -> {
+					OrderRequestItem requestItem = new OrderRequestItem();
+					requestItem.setProductId(item.getProductId());
+					requestItem.setQuantity(item.getQuantity());
+					return requestItem;
+				})
+				.collect(Collectors.toList());
+
+		// Tạo đơn hàng
+		Order order = createOrder(userDetails.getId(), request.getShipInfoId(), request.getPaymentMethod(), orderItems);
+
+		// Thêm notes nếu có
+		if (request.getNotes() != null && !request.getNotes().trim().isEmpty()) {
+			order.setReasonDetailed(request.getNotes());
+			orderRepository.save(order);
+		}
+
+		log.info("Direct order created successfully for user {} with order ID {}", userDetails.getId(), order.getId());
+
+		return mapOrderToDetailDTO(order);
 	}
 }
