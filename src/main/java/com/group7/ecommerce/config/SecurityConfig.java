@@ -60,6 +60,7 @@ public class SecurityConfig {
 						"/swagger-ui/**",
 						"/swagger-ui.html",
 						"/v3/api-docs/**",
+                        "/api/orders/**", // Thêm tạm thời để test API
 						"/v3/api-docs.yaml"
 						).permitAll()
 				.requestMatchers("/api/product").hasAuthority("ADMIN")

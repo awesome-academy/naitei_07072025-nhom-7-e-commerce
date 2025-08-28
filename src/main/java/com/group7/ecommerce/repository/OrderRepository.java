@@ -23,6 +23,18 @@ public interface OrderRepository extends JpaRepository<Order, Integer>, JpaSpeci
 			WHERE o.id = :id
 			""")
 	Optional<Order> findDetailsById(@Param("id") Integer id);
+	
+	@Query("""
+			SELECT o FROM Order o
+			JOIN FETCH o.user u
+			JOIN FETCH o.shipInfo s
+			LEFT JOIN FETCH o.orderItems oi
+			LEFT JOIN FETCH oi.product p
+			LEFT JOIN FETCH o.reason r
+			WHERE o.id = :orderId AND u.id = :userId
+			""")
+	Optional<Order> findOrderDetailByUserAndOrderId(@Param("userId") Long userId, @Param("orderId") Integer orderId);
+	
     List<Order> findByUserIdAndShipInfo(Integer userId, ShipInfo shipInfo);
 
 	@Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.status = :status")

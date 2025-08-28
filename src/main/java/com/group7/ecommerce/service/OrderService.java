@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 import com.group7.ecommerce.dto.request.OrderRequestItem;
 import com.group7.ecommerce.dto.request.UpdateOrderStatusDto;
+import com.group7.ecommerce.dto.response.CustomerOrderDetailResp;
 import com.group7.ecommerce.dto.response.OrderDetailResp;
 import com.group7.ecommerce.dto.response.OrderSummaryResp;
 import com.group7.ecommerce.entity.Order;
@@ -18,6 +19,17 @@ public interface OrderService {
 	OrderDetailResp getOrderDetailById(Integer orderId);
 
 	OrderDetailResp updateOrderStatus(Integer orderId, UpdateOrderStatusDto request);
+	
+	/**
+	 * Lấy chi tiết đơn hàng cho khách hàng
+	 * 
+	 * @param userId ID của khách hàng
+	 * @param orderId ID của đơn hàng
+	 * @return Chi tiết đơn hàng của khách hàng
+	 * @throws DataNotFoundException nếu không tìm thấy đơn hàng
+	 * @throws UnauthorizedException nếu đơn hàng không thuộc về khách hàng
+	 */
+	CustomerOrderDetailResp getCustomerOrderDetail(Long userId, Integer orderId);
 	/**
 	 * Tạo một đơn hàng mới cho người dùng.
 	 * <p>
