@@ -335,12 +335,44 @@ public class OrderServiceImpl implements OrderService {
 		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
 		Order order = orderRepository.findById(orderId)
-				.orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+				.orElseThrow(() -> new ResourceNotFoundException(getMessage("error.order.not.found", orderId)));
+
 
 		// Kiểm tra quyền sở hữu
 		if (order.getUser().getId()!= userDetails.getId()) {
 			throw new RuntimeException(getMessage("error.order.access.denied"));
 		}
+
+		return mapOrderToDetailDTO(order);
+	}
+
+	@Transactional
+	@Override
+	public OrderDetailResp updatePaymentMethod(Authentication authentication, int orderId, UpdatePaymentMethodRequest request) {
+		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+		Order order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new ResourceNotFoundException(getMessage("error.order.not.found", orderId)));
+
+		// Kiểm tra quyền sở hữu
+		if (order.getUser().getId()!= userDetails.getId()) {
+			throw new RuntimeException(getMessage("error.order.access.denied"));
+		}
+
+		// Kiểm tra trạng thái đơn hàng (chỉ cho phép cập nhật khi đang chờ xác nhận)
+		if (order.getStatus() != OrderStatus.PENDING) {
+			throw new RuntimeException(getMessage("error.order.cannot.update.payment", order.getStatus().toString()));
+		}
+
+		// Cập nhật phương thức thanh toán
+		order.setPaymentMethod(request.getPaymentMethod());
+		if (request.getNotes() != null && !request.getNotes().trim().isEmpty()) {
+			order.setReasonDetailed(request.getNotes());
+		}
+
+		order = orderRepository.save(order);
+
+		log.info("Payment method updated to {} for order {}", request.getPaymentMethod(), orderId);
 
 		return mapOrderToDetailDTO(order);
 	}
