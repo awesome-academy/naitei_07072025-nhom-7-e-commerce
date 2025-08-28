@@ -8,10 +8,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface CartItemRepository extends JpaRepository<CartItem, Integer> {
 
     Optional<CartItem> findByCartAndProduct(Cart cart, Product product);
@@ -43,4 +45,9 @@ public interface CartItemRepository extends JpaRepository<CartItem, Integer> {
             ORDER BY ci.createdAt DESC
             """)
     List<CartItem> findCartItemsWithProductAndImagesByUser(@Param("user") User user);
+
+    /**
+     * Tìm tất cả cart items theo cart ID
+     */
+    List<CartItem> findByCartId(int cartId);
 }

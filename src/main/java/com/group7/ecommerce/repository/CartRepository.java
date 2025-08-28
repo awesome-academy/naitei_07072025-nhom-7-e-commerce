@@ -3,11 +3,17 @@ package com.group7.ecommerce.repository;
 import com.group7.ecommerce.entity.Cart;
 import com.group7.ecommerce.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository
 public interface CartRepository extends JpaRepository<Cart, Integer> {
 
     Optional<Cart> findByUser(User user);
-    Optional<Cart> findByUserId(Integer userId);
+
+    /**
+     * Tìm giỏ hàng theo user ID
+     */
+    Optional<Cart> findByUserId(Long userId);
 }
