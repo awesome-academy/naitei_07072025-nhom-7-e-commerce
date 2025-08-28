@@ -49,6 +49,51 @@
                         </div>
                     </div>
                 </div>
+<<<<<<< HEAD
+=======
+                
+				<div class="col-md-5">
+				    <div th:if="${suggestion.status.name() == 'PENDING'}" class="box box-success">
+				        <div class="box-header with-border">
+				            <h3 class="box-title" th:text="#{admin.suggestions.detail.box.actions}">Hành động</h3>
+				        </div>
+				        <form th:action="@{/admin/suggestions/{id}(id=${suggestion.id})}" th:object="${reviewDto}" method="post">
+				        	<input type="hidden" name="_method" value="patch" />
+				            <div class="box-body">
+				                <div class="form-group">
+				                    <label th:text="#{admin.suggestions.detail.form.label.decision}">Quyết định</label>
+				                    <select th:field="*{status}" class="form-control status-selector">
+				                        <option value="APPROVED" th:text="#{admin.suggestions.detail.form.option.approve}">CHẤP NHẬN (APPROVED)</option>
+				                        <option value="REJECTED" th:text="#{admin.suggestions.detail.form.option.reject}">TỪ CHỐI (REJECTED)</option>
+				                    </select>
+				                </div>
+				
+				                <div class="reason-block d-none">
+				                	<div class="form-group">
+				                    <label for="rejectionReason" th:text="#{admin.suggestions.detail.form.label.reason}">Lý do từ chối (bắt buộc nếu từ chối)</label>
+				                    <textarea id="rejectionReason" th:field="*{rejectionReason}" class="form-control" rows="4" 
+				                              th:placeholder="#{admin.suggestions.detail.form.placeholder.reason}"></textarea>
+				                	</div>
+				            	</div>
+				            </div>
+				            
+				            <div class="box-footer">
+				                <button type="submit" class="btn btn-success pull-right"><i class="fa fa-check-circle"></i> <span th:text="#{action.verify}">Xác nhận</span></button>
+				            </div>
+				        </form>
+				    </div>
+				
+				    <div th:unless="${suggestion.status.name() == 'PENDING'}" class="box box-solid">
+				        <div class="box-header with-border">
+				            <h3 class="box-title" th:text="#{admin.suggestions.detail.box.actions}">Hành động</h3>
+				        </div>
+				        <div class="box-body">
+				            <p class="text-info"><i class="fa fa-info-circle"></i> <span th:text="#{admin.suggestions.detail.processed}">Gợi ý này đã được xử lý.</span></p>
+				            <a th:href="@{/admin/suggestions}" class="btn btn-default"><i class="fa fa-arrow-left"></i> <span th:text="#{admin.suggestions.button.backToList}">Quay lại danh sách</span></a>
+				        </div>
+				    </div>
+				</div>
+>>>>>>> 1380674 (fix)
             </div>
         </section>
     </div>
