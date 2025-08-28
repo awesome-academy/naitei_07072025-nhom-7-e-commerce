@@ -30,4 +30,6 @@ public interface OrderRepository extends JpaRepository<Order, Integer>, JpaSpeci
 	BigDecimal sumTotalAmountByStatus(@Param("status") OrderStatus status);
 
 	Long countByStatus(OrderStatus status);
+
+	List<Order> findByUserIdOrderByCreatedAtDesc(Long userId);
 }

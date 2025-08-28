@@ -51,6 +51,40 @@ public class OrderController {
                 .body(ApiResponse.success(getMessage("order.create.success"), orderDetail));
     }
 
+    /**
+     * Lấy thông tin chi tiết đơn hàng
+     */
+    @GetMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<OrderDetailResp>> getOrderDetail(
+            @PathVariable int orderId,
+            Authentication authentication) {
+        OrderDetailResp orderDetail = orderService.getOrderDetail(authentication, orderId);
+        return ResponseEntity.ok(ApiResponse.success(
+                getMessage("order.get.success"), orderDetail));
+    }
+
+    /**
+     * Lấy danh sách đơn hàng của user
+     */
+    @GetMapping("/my-orders")
+    public ResponseEntity<ApiResponse<List<OrderSummaryResp>>> getMyOrders(
+            Authentication authentication) {
+        List<OrderSummaryResp> orders = orderService.getUserOrders(authentication);
+        return ResponseEntity.ok(ApiResponse.success(
+                getMessage("orders.get.success"), orders));
+    }
+
+    /**
+     * Lấy danh sách phương thức thanh toán có sẵn
+     */
+    @GetMapping("/payment-methods")
+    public ResponseEntity<ApiResponse<List<String>>> getPaymentMethods() {
+        List<String> paymentMethods = orderService.getAvailablePaymentMethods();
+        return ResponseEntity.ok(ApiResponse.success(
+                getMessage("payment.methods.success"), paymentMethods));
+    }
+
+
 
     /**
      * Helper method để lấy localized message
