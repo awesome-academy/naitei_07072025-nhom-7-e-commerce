@@ -45,4 +45,9 @@ public interface CartItemRepository extends JpaRepository<CartItem, Integer> {
             ORDER BY ci.createdAt DESC
             """)
     List<CartItem> findCartItemsWithProductAndImagesByUser(@Param("user") User user);
+
+    /**
+     * Tìm tất cả cart items theo cart ID
+     */
+    List<CartItem> findByCartId(int cartId);
 }

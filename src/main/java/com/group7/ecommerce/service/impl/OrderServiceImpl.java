@@ -47,6 +47,8 @@ public class OrderServiceImpl implements OrderService {
 	private final ShipInfoRepository shipInfoRepository;
 	private final UserRepository userRepository;
 	private final MessageSource messageSource;
+	private final CartRepository cartRepository;
+	private final CartItemRepository cartItemRepository;
 
 	@Override
 	public OrderDetailResp getOrderDetailById(Integer orderId) {
@@ -277,4 +279,47 @@ public class OrderServiceImpl implements OrderService {
 
 		return mapOrderToDetailDTO(order);
 	}
+
+	@Transactional(readOnly = false)
+	@Override
+	public OrderDetailResp createOrderFromCart(Authentication authentication, CreateOrderRequest request) {
+		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+		// Tìm giỏ hàng của user
+		Cart cart = cartRepository.findByUserId(userDetails.getId())
+				.orElseThrow(() -> new RuntimeException(getMessage("error.cart.not.found")));
+
+		// Lấy danh sách sản phẩm trong giỏ hàng
+		List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
+		if (cartItems.isEmpty()) {
+			throw new RuntimeException(getMessage("error.cart.empty"));
+		}
+
+		// Chuyển đổi CartItem thành OrderRequestItem
+		List<OrderRequestItem> orderItems = cartItems.stream()
+				.map(cartItem -> {
+					OrderRequestItem item = new OrderRequestItem();
+					item.setProductId(cartItem.getProduct().getId());
+					item.setQuantity(cartItem.getQuantity());
+					return item;
+				})
+				.collect(Collectors.toList());
+
+		// Tạo đơn hàng
+		Order order = createOrder(userDetails.getId(), request.getShipInfoId(), request.getPaymentMethod(), orderItems);
+
+		// Thêm notes nếu có
+		if (request.getNotes() != null && !request.getNotes().trim().isEmpty()) {
+			order.setReasonDetailed(request.getNotes());
+			orderRepository.save(order);
+		}
+
+		// Xóa giỏ hàng sau khi tạo đơn thành công
+		cartItemRepository.deleteAll(cartItems);
+
+		log.info("Order created from cart successfully for user {} with order ID {}", userDetails.getId(), order.getId());
+
+		return mapOrderToDetailDTO(order);
+	}
+
 }

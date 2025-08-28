@@ -40,6 +40,19 @@ public class OrderController {
     }
 
     /**
+     //     * Tạo đơn hàng từ giỏ hàng
+     //     */
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse<OrderDetailResp>> createOrderFromCart(
+            @Valid @RequestBody CreateOrderRequest request,
+            Authentication authentication) {
+        OrderDetailResp orderDetail = orderService.createOrderFromCart(authentication, request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(getMessage("order.create.success"), orderDetail));
+    }
+
+
+    /**
      * Helper method để lấy localized message
      */
     private String getMessage(String key, Object... args) {

@@ -51,5 +51,5 @@ public interface OrderService {
 	Order createOrder(Long userId, int shipInfoId, String paymentMethod, List<OrderRequestItem> items);
 
 	OrderDetailResp createDirectOrder(Authentication authentication, CreateOrderRequest request);
-
+	OrderDetailResp createOrderFromCart(Authentication authentication, CreateOrderRequest request);
 }

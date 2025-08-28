@@ -424,3 +424,5 @@ CREATE INDEX idx_cart_items_user_deleted ON cart_items(cart_id, is_deleted);
 -- Comment
 COMMENT ON COLUMN cart_items.is_deleted IS 'Soft delete flag - true means deleted';
 COMMENT ON COLUMN cart_items.deleted_at IS 'Timestamp when item was soft deleted';
+
+ALTER TABLE orders MODIFY COLUMN total_amount DECIMAL(20,2);

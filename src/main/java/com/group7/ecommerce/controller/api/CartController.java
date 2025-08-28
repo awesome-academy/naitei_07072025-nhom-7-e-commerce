@@ -41,7 +41,7 @@ public class CartController {
 
             AddToCartResponse response = cartService.addToCart(authentication, request);
 
-            if (response.success()) {
+            if (!response.success()) {
                 return ResponseEntity.badRequest().body(response);
             }
             return ResponseEntity.ok(response);
