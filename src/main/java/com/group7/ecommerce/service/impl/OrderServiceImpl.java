@@ -6,6 +6,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import com.group7.ecommerce.dto.request.OrderRequestItem;
+import com.group7.ecommerce.entity.*;
+import com.group7.ecommerce.enums.OrderStatus;
+import com.group7.ecommerce.exception.DataNotFoundException;
+import com.group7.ecommerce.exception.ResourceNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
+import com.group7.ecommerce.repository.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
@@ -17,6 +26,8 @@ import org.springframework.util.StringUtils;
 
 import com.group7.ecommerce.dto.request.OrderRequestItem;
 import com.group7.ecommerce.dto.request.UpdateOrderStatusDto;
+import com.group7.ecommerce.dto.response.CustomerOrderDetailResp;
+import com.group7.ecommerce.dto.response.CustomerOrderItemResp;
 import com.group7.ecommerce.dto.response.OrderDetailResp;
 import com.group7.ecommerce.dto.response.OrderItemResp;
 import com.group7.ecommerce.dto.response.OrderSummaryResp;
@@ -39,6 +50,7 @@ public class OrderServiceImpl implements OrderService {
 	private final OrderRepository orderRepository;
 	private final OrderItemRepository orderItemRepository;
 	private final ProductRepository productRepository;
+	private final ProductImageRepository productImageRepository;
 	private final ShipInfoRepository shipInfoRepository;
 	private final UserRepository userRepository;
 	private final MessageSource messageSource;
@@ -94,6 +106,19 @@ public class OrderServiceImpl implements OrderService {
 
 		Order updatedOrder = orderRepository.save(order);
 		return mapOrderToDetailDTO(updatedOrder);
+	}
+	
+	@Override
+	public CustomerOrderDetailResp getCustomerOrderDetail(Long userId, Integer orderId) {
+		Order order = orderRepository.findOrderDetailByUserAndOrderId(userId, orderId)
+				.orElseThrow(() -> new DataNotFoundException(getMessage("error.order.not.found")));
+		
+		// Kiểm tra xem đơn hàng có thuộc về user không
+		if (order.getUser().getId() != userId) {
+			throw new AccessDeniedException(getMessage("error.order.not.authorized"));
+		}
+		
+		return mapOrderToCustomerDetailDTO(order);
 	}
 
 	private static Specification<Order> customerNameContains(String customerName) {
@@ -232,5 +257,43 @@ public class OrderServiceImpl implements OrderService {
 				orderItem.getQuantity(),
 				orderItem.getPrice()
 				);
+	}
+	
+	private CustomerOrderDetailResp mapOrderToCustomerDetailDTO(Order order) {
+		List<CustomerOrderItemResp> itemDTOs = order.getOrderItems().stream()
+				.map(this::mapOrderItemToCustomerDTO)
+				.collect(Collectors.toList());
+
+		return new CustomerOrderDetailResp(
+				order.getId(),
+				order.getCreatedAt(),
+				order.getStatus(),
+				order.getPaymentMethod(),
+				order.getTotalAmount(),
+				order.getShipInfo().getReceiver(),
+				order.getShipInfo().getPhone(),
+				order.getShipInfo().getAddress(),
+				itemDTOs
+		);
+	}
+	
+	private CustomerOrderItemResp mapOrderItemToCustomerDTO(OrderItem orderItem) {
+		// Lấy hình ảnh chính của sản phẩm từ ProductImageRepository
+		String productImage = productImageRepository.findByProductId(Long.valueOf(orderItem.getProduct().getId()))
+				.stream()
+				.filter(ProductImage::isPrimary)
+				.findFirst()
+				.map(ProductImage::getImageUrl)
+				.orElse(""); // Trả về chuỗi rỗng nếu không có hình ảnh
+		
+		BigDecimal totalPrice = orderItem.getPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()));
+		
+		return new CustomerOrderItemResp(
+				orderItem.getProduct().getName(),
+				productImage,
+				orderItem.getQuantity(),
+				orderItem.getPrice(),
+				totalPrice
+		);
 	}
 }
