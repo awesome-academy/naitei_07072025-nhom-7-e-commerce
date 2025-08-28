@@ -1,10 +1,12 @@
 package com.group7.ecommerce.service;
 
 import com.group7.ecommerce.dto.request.LoginDto;
+import com.group7.ecommerce.dto.request.UpdateProfileRequest;
 import com.group7.ecommerce.dto.request.UserRegistrationDto;
 import com.group7.ecommerce.dto.request.VerifyOtpDto;
 import com.group7.ecommerce.dto.response.JwtResponse;
 import com.group7.ecommerce.dto.response.ShowProfileResponse;
+import com.group7.ecommerce.dto.response.UpdateProfileResponse;
 
 public interface UserService {
 
@@ -41,4 +43,9 @@ public interface UserService {
      * @param currentUser thông tin người dùng hiện tại
      */
     ShowProfileResponse showProfileAdmin(JwtResponse currentUser);
+
+    /**
+     * Cập nhật thông tin cá nhân admin (không cho phép sửa username và email)
+     */
+    UpdateProfileResponse updateProfileAdmin(JwtResponse currentUser, UpdateProfileRequest request);
 }

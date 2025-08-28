@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragment/head :: head}"></head>
+<head th:replace="~{fragment/head :: head}">
+  <title>Show Profile</title>
+</head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
   <header th:replace="~{fragment/header :: header}"></header>
@@ -48,7 +50,7 @@
                 </li>
               </ul>
 
-              <a href="#settings" data-toggle="tab" class="btn btn-primary btn-block"><b>Edit Profile</b></a>
+              <a th:href="@{/admin/info/edit}" class="btn btn-primary btn-block"><b>Edit Profile</b></a>
             </div>
             <!-- /.box-body -->
           </div>
@@ -98,7 +100,11 @@
 
                   <strong><i class="fa fa-calendar margin-r-5"></i> Address</strong>
                   <p class="text-muted">
-                    <span class="label label-info" th:text="${profileUser.user.address ?: 'Not information'}"></span>
+                    <span th:if="${profileUser.user.address != null and #strings.length(profileUser.user.address) > 0}"
+                          th:text="${profileUser.user.address}"></span>
+                    <span th:unless="${profileUser.user.address != null and #strings.length(profileUser.user.address) > 0}"
+                          class="label label-info"
+                          th:text="'Not information'"></span>
                   </p>
                 </div>
               </div>
