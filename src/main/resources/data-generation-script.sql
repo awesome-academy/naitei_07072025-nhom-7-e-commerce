@@ -412,3 +412,15 @@ SELECT 'Data generation script executed successfully!' as Message;
 
 -- Bật lại khóa ngoại sau tất cả các thao tác chèn dữ liệu
 SET FOREIGN_KEY_CHECKS = 1;
+
+ALTER TABLE cart_items
+ADD COLUMN is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN deleted_at DATETIME NULL;
+
+-- Index để cải thiện performance cho các query filter by is_deleted
+CREATE INDEX idx_cart_items_is_deleted ON cart_items(is_deleted);
+CREATE INDEX idx_cart_items_user_deleted ON cart_items(cart_id, is_deleted);
+
+-- Comment
+COMMENT ON COLUMN cart_items.is_deleted IS 'Soft delete flag - true means deleted';
+COMMENT ON COLUMN cart_items.deleted_at IS 'Timestamp when item was soft deleted';
