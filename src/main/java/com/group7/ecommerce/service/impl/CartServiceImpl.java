@@ -11,9 +11,12 @@ import com.group7.ecommerce.entity.User;
 import com.group7.ecommerce.dto.response.cart.CartItemResponse;
 import com.group7.ecommerce.dto.request.cart.CartSummary;
 import com.group7.ecommerce.dto.response.cart.ViewCartResponse;
+import com.group7.ecommerce.dto.request.cart.*;
+import com.group7.ecommerce.dto.response.cart.*;
 import com.group7.ecommerce.entity.*;
 import com.group7.ecommerce.repository.CartItemRepository;
 import com.group7.ecommerce.repository.CartRepository;
+import com.group7.ecommerce.repository.ProductRepository;
 import com.group7.ecommerce.service.CartService;
 import com.group7.ecommerce.utils.helper.ProductHelper;
 import com.group7.ecommerce.utils.helper.UserHelper;
@@ -44,6 +47,7 @@ public class CartServiceImpl implements CartService {
     private final MessageSource messageSource;
     private final CartValidator cartValidator;
     private final ProductHelper productHelper;
+    private final ProductRepository productRepository;
 
     @Override
     @Transactional(readOnly = false)
@@ -316,4 +320,228 @@ public class CartServiceImpl implements CartService {
                 .estimatedAmount(estimatedAmount)
                 .build();
     }
+
+    // ==================== SOFT DELETE METHODS ====================
+
+    @Override
+    public DeleteCartItemResponse softDeleteCartItem(Authentication authentication, DeleteCartItemRequest request) {
+        try {
+            Integer userId = userHelper.getCurrentUserId(authentication);
+            User user = userHelper.findUserByIdOrThrow(userId.longValue());
+
+            // Validation
+            if (request.cartItemId() == null) {
+                return createFailedDeleteResponse(getMessage("error.cart.item.id.required"));
+            }
+
+            // Tìm cart item
+            Optional<CartItem> cartItemOpt = cartItemRepository.findActiveCartItemByIdAndUser(request.cartItemId(), user);
+            if (cartItemOpt.isEmpty()) {
+                return createFailedDeleteResponse(getMessage("error.cart.item.not.found"));
+            }
+
+            CartItem cartItem = cartItemOpt.get();
+
+            // Restore stock quantity khi xóa cart item
+            Product product = cartItem.getProduct();
+            product.setStockQuantity(product.getStockQuantity() + cartItem.getQuantity());
+            productRepository.save(product);
+
+            // Soft delete cart item
+            cartItem.softDelete();
+            cartItemRepository.save(cartItem);
+
+            // Get updated cart summary
+            CartSummary summary = getCartSummaryForUser(user);
+
+            log.info("Soft deleted cart item {} for user {}", request.cartItemId(), userId);
+
+            return DeleteCartItemResponse.builder()
+                    .success(true)
+                    .message(getMessage("cart.item.delete.success"))
+                    .deletedCartItemIds(List.of(request.cartItemId()))
+                    .failedCartItemIds(List.of())
+                    .totalItemsInCart(summary.totalItems())
+                    .summary(summary)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error soft deleting cart item: {}", e.getMessage());
+            return createFailedDeleteResponse(getMessage("error.cart.item.delete.failed", e.getMessage()));
+        }
+    }
+
+    @Override
+    public DeleteCartItemResponse softDeleteMultipleCartItems(Authentication authentication, DeleteMultipleCartItemsRequest request) {
+        try {
+            Integer userId = userHelper.getCurrentUserId(authentication);
+            User user = userHelper.findUserByIdOrThrow(userId.longValue());
+
+            if (request.cartItemIds() == null || request.cartItemIds().isEmpty()) {
+                return createFailedDeleteResponse(getMessage("error.cart.item.ids.required"));
+            }
+
+            // Tìm các cart items hợp lệ
+            List<CartItem> cartItems = cartItemRepository.findActiveCartItemsByIdsAndUser(request.cartItemIds(), user);
+            List<Integer> foundIds = cartItems.stream().map(CartItem::getId).collect(Collectors.toList());
+            List<Integer> failedIds = request.cartItemIds().stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .collect(Collectors.toList());
+
+            if (cartItems.isEmpty()) {
+                return createFailedDeleteResponse(getMessage("error.cart.items.not.found"));
+            }
+
+            // Restore stock quantities
+            for (CartItem cartItem : cartItems) {
+                Product product = cartItem.getProduct();
+                product.setStockQuantity(product.getStockQuantity() + cartItem.getQuantity());
+                productRepository.save(product);
+
+                // Soft delete
+                cartItem.softDelete();
+            }
+
+            cartItemRepository.saveAll(cartItems);
+
+            // Get updated cart summary
+            CartSummary summary = getCartSummaryForUser(user);
+
+            log.info("Soft deleted {} cart items for user {}. Failed: {}", foundIds.size(), userId, failedIds.size());
+
+            return DeleteCartItemResponse.builder()
+                    .success(true)
+                    .message(getMessage("cart.items.delete.success", foundIds.size()))
+                    .deletedCartItemIds(foundIds)
+                    .failedCartItemIds(failedIds)
+                    .totalItemsInCart(summary.totalItems())
+                    .summary(summary)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error soft deleting multiple cart items: {}", e.getMessage());
+            return createFailedDeleteResponse(getMessage("error.cart.items.delete.failed", e.getMessage()));
+        }
+    }
+
+// ==================== HARD DELETE METHODS ====================
+
+    @Override
+    public DeleteCartItemResponse hardDeleteCartItem(Authentication authentication, DeleteCartItemRequest request) {
+        try {
+            Integer userId = userHelper.getCurrentUserId(authentication);
+            User user = userHelper.findUserByIdOrThrow(userId.longValue());
+
+            if (request.cartItemId() == null) {
+                return createFailedDeleteResponse(getMessage("error.cart.item.id.required"));
+            }
+
+            // Tìm cart item trước khi xóa để restore stock
+            Optional<CartItem> cartItemOpt = cartItemRepository.findActiveCartItemByIdAndUser(request.cartItemId(), user);
+            if (cartItemOpt.isEmpty()) {
+                return createFailedDeleteResponse(getMessage("error.cart.item.not.found"));
+            }
+
+            CartItem cartItem = cartItemOpt.get();
+
+            // Restore stock quantity
+            Product product = cartItem.getProduct();
+            product.setStockQuantity(product.getStockQuantity() + cartItem.getQuantity());
+            productRepository.save(product);
+
+            // Hard delete
+            int deletedCount = cartItemRepository.hardDeleteCartItemByIdAndUser(request.cartItemId(), user);
+
+            if (deletedCount == 0) {
+                return createFailedDeleteResponse(getMessage("error.cart.item.not.found"));
+            }
+
+            // Get updated cart summary
+            CartSummary summary = getCartSummaryForUser(user);
+
+            log.info("Hard deleted cart item {} for user {}", request.cartItemId(), userId);
+
+            return DeleteCartItemResponse.builder()
+                    .success(true)
+                    .message(getMessage("cart.item.delete.success"))
+                    .deletedCartItemIds(List.of(request.cartItemId()))
+                    .failedCartItemIds(List.of())
+                    .totalItemsInCart(summary.totalItems())
+                    .summary(summary)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error hard deleting cart item: {}", e.getMessage());
+            return createFailedDeleteResponse(getMessage("error.cart.item.delete.failed", e.getMessage()));
+        }
+    }
+
+    @Override
+    public DeleteCartItemResponse hardDeleteMultipleCartItems(Authentication authentication, DeleteMultipleCartItemsRequest request) {
+        try {
+            Integer userId = userHelper.getCurrentUserId(authentication);
+            User user = userHelper.findUserByIdOrThrow(userId.longValue());
+
+            if (request.cartItemIds() == null || request.cartItemIds().isEmpty()) {
+                return createFailedDeleteResponse(getMessage("error.cart.item.ids.required"));
+            }
+
+            // Tìm cart items trước khi xóa để restore stock
+            List<CartItem> cartItems = cartItemRepository.findActiveCartItemsByIdsAndUser(request.cartItemIds(), user);
+
+            if (cartItems.isEmpty()) {
+                return createFailedDeleteResponse(getMessage("error.cart.items.not.found"));
+            }
+
+            // Restore stock quantities
+            for (CartItem cartItem : cartItems) {
+                Product product = cartItem.getProduct();
+                product.setStockQuantity(product.getStockQuantity() + cartItem.getQuantity());
+                productRepository.save(product);
+            }
+
+            // Hard delete
+            List<Integer> cartItemIds = cartItems.stream().map(CartItem::getId).collect(Collectors.toList());
+            int deletedCount = cartItemRepository.hardDeleteCartItemsByIdsAndUser(cartItemIds, user);
+
+            List<Integer> failedIds = request.cartItemIds().stream()
+                    .filter(id -> !cartItemIds.contains(id))
+                    .collect(Collectors.toList());
+
+            // Get updated cart summary
+            CartSummary summary = getCartSummaryForUser(user);
+
+            log.info("Hard deleted {} cart items for user {}. Failed: {}", deletedCount, userId, failedIds.size());
+
+            return DeleteCartItemResponse.builder()
+                    .success(true)
+                    .message(getMessage("cart.items.delete.success", deletedCount))
+                    .deletedCartItemIds(cartItemIds)
+                    .failedCartItemIds(failedIds)
+                    .totalItemsInCart(summary.totalItems())
+                    .summary(summary)
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error hard deleting multiple cart items: {}", e.getMessage());
+            return createFailedDeleteResponse(getMessage("error.cart.items.delete.failed", e.getMessage()));
+        }
+    }
+
+// ==================== HELPER METHODS ====================
+
+    private DeleteCartItemResponse createFailedDeleteResponse(String message) {
+        return DeleteCartItemResponse.builder()
+                .success(false)
+                .message(message)
+                .deletedCartItemIds(List.of())
+                .failedCartItemIds(List.of())
+                .build();
+    }
+
+    private CartSummary getCartSummaryForUser(User user) {
+        List<CartItem> activeCartItems = cartItemRepository.findCartItemsWithProductAndImagesByUser(user);
+        return calculateCartSummary(activeCartItems);
+    }
+
 }
