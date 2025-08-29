@@ -28,9 +28,11 @@ public class WebConfig implements WebMvcConfigurer {
     }
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Map URL /images/** tới folder upload trên disk
         registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:" + uploadImagesDir + "/");
+                .addResourceLocations(
+                        "classpath:/static/images/",
+                        "file:" + uploadImagesDir + "/"
+                );
     }
 
     @Bean("defaultProductImageUrl")

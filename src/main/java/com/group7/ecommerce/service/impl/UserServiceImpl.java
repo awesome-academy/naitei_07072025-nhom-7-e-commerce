@@ -1,9 +1,6 @@
 package com.group7.ecommerce.service.impl;
 
-import com.group7.ecommerce.dto.request.LoginDto;
-import com.group7.ecommerce.dto.request.UpdateProfileRequest;
-import com.group7.ecommerce.dto.request.UserRegistrationDto;
-import com.group7.ecommerce.dto.request.VerifyOtpDto;
+import com.group7.ecommerce.dto.request.*;
 import com.group7.ecommerce.dto.response.JwtResponse;
 import com.group7.ecommerce.dto.response.ShowProfileResponse;
 import com.group7.ecommerce.dto.response.UpdateProfileResponse;
@@ -25,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +43,7 @@ public class UserServiceImpl implements UserService {
     private final ProductHelper productHelper;
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
+    private final PasswordEncoder passwordEncoder;
     private final MessageSource messageSource;
 
     @Override
@@ -171,5 +170,33 @@ public class UserServiceImpl implements UserService {
     private String getMessage(String key, Object... args) {
         Locale locale = LocaleContextHolder.getLocale();
         return messageSource.getMessage(key, args, key, locale);
+    }
+
+    public void changePassword(String email, ChangePasswordDto dto, Locale locale) throws Exception {
+        log.info("Changing password for user: {}", email);
+
+        // Tìm user theo email
+        User user = userHelper.findUserByEmailOrThrow(email);
+
+        // Kiểm tra mật khẩu cũ
+        if (!passwordEncoder.matches(dto.oldPassword(), user.getPassword())) {
+            throw new RuntimeException(
+                    messageSource.getMessage("auth.change.password.old.incorrect", null, locale)
+            );
+        }
+
+        // Kiểm tra mật khẩu mới không trùng với mật khẩu cũ
+        if (passwordEncoder.matches(dto.newPassword(), user.getPassword())) {
+            throw new RuntimeException(
+                    messageSource.getMessage("auth.change.password.same.as.old", null, locale)
+            );
+        }
+
+        // Mã hóa và lưu mật khẩu mới
+        String encodedNewPassword = passwordEncoder.encode(dto.newPassword());
+        user.setPassword(encodedNewPassword);
+
+        userRepository.save(user);
+        log.info("Password changed successfully for user: {}", email);
     }
 }

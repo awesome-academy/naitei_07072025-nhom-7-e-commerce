@@ -1,12 +1,11 @@
 package com.group7.ecommerce.service;
 
-import com.group7.ecommerce.dto.request.LoginDto;
-import com.group7.ecommerce.dto.request.UpdateProfileRequest;
-import com.group7.ecommerce.dto.request.UserRegistrationDto;
-import com.group7.ecommerce.dto.request.VerifyOtpDto;
+import com.group7.ecommerce.dto.request.*;
 import com.group7.ecommerce.dto.response.JwtResponse;
 import com.group7.ecommerce.dto.response.ShowProfileResponse;
 import com.group7.ecommerce.dto.response.UpdateProfileResponse;
+
+import java.util.Locale;
 
 public interface UserService {
 
@@ -48,4 +47,13 @@ public interface UserService {
      * Cập nhật thông tin cá nhân admin (không cho phép sửa username và email)
      */
     UpdateProfileResponse updateProfileAdmin(JwtResponse currentUser, UpdateProfileRequest request);
+
+    /**
+     * Change user password with locale support
+     * @param email user email
+     * @param changePasswordDto request change password
+     * @param locale locale for error messages
+     * @throws Exception if old password is incorrect or user not found
+     */
+    void changePassword(String email, ChangePasswordDto changePasswordDto, Locale locale) throws Exception;
 }
