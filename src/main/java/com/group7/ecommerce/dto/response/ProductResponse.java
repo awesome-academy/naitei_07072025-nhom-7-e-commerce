@@ -11,6 +11,7 @@ public record ProductResponse(
         BigDecimal importPrice,
         BigDecimal sellingPrice,
         int stockQuantity,
+        Long categoryId,
         String category,
         List<String> imageUrls,
         boolean isFeatured,

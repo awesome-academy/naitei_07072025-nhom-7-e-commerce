@@ -14,12 +14,15 @@ import com.group7.ecommerce.repository.CategoryRepository;
 import com.group7.ecommerce.service.CategoryService;
 
 import lombok.RequiredArgsConstructor;
+import com.group7.ecommerce.dto.response.CategoryResponse;
+import com.group7.ecommerce.mapper.CategoryMapper;
 
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
 	private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
 
 	@Override
 	public List<CategoryResp> findAllAsTree() {
@@ -57,4 +60,12 @@ public class CategoryServiceImpl implements CategoryService {
 				childrenDto
 				);
 	}
+
+    @Override
+    public List<CategoryResponse>  getAllCategories() {
+        return categoryRepository.findAll()
+                .stream()
+                .map(categoryMapper::toCategoryResponse)
+                .toList();
+    }
 }

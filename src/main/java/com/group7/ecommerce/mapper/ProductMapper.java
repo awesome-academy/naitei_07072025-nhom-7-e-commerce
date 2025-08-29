@@ -6,8 +6,6 @@ import com.group7.ecommerce.dto.response.ProductResponse;
 import com.group7.ecommerce.entity.Product;
 import org.mapstruct.*;
 
-import java.util.List;
-
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
@@ -15,6 +13,8 @@ public interface ProductMapper {
     @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now())")
     Product toEntity(ProductDto dto);
 
+    @Mapping(target = "deleted", expression = "java(dto.isDeleted() != null ? dto.isDeleted() : false)")
+    @Mapping(target = "featured", expression = "java(dto.isFeatured() != null ? dto.isFeatured() : false)")
     void updateEntityFromDto(@MappingTarget Product entity, ProductUpdateDto dto);
 
     @Mapping(target = "isFeatured", source = "featured")
@@ -22,6 +22,4 @@ public interface ProductMapper {
     @Mapping(target = "category", source = "category.name")
     @Mapping(target = "imageUrls", expression = "java(product.getImages().stream().map(img -> img.getImageUrl()).toList())")
     ProductResponse toResponse(Product product);
-
-    List<ProductResponse> toResponseList(List<Product> products);
 }

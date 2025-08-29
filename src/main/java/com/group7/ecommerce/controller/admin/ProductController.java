@@ -1,7 +1,9 @@
 package com.group7.ecommerce.controller.admin;
 
 import com.group7.ecommerce.dto.request.ProductUpdateDto;
+import com.group7.ecommerce.dto.response.CategoryResponse;
 import com.group7.ecommerce.dto.response.ProductResponse;
+import com.group7.ecommerce.service.CategoryService;
 import com.group7.ecommerce.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -9,12 +11,16 @@ import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Locale;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -22,6 +28,7 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final CategoryService categoryService;
     private final MessageSource messageSource;
 
     @GetMapping("/import")
@@ -94,20 +101,54 @@ public class ProductController {
         return "admin/products/detail";
     }
 
+    @GetMapping("update/{id}")
+    public String updateProduct(@PathVariable Long id, Model model) {
+        ProductResponse product = productService.getProductById(id);
+        List<CategoryResponse> categories = categoryService.getAllCategories();
 
-    @PutMapping(value = "/info/{id}")
-    public String updateProduct(
-            @PathVariable Long id,
-            @ModelAttribute @Valid ProductUpdateDto dto) {
-        productService.updateProduct(id, dto);
-        return "Cập nhật thành công";
+        model.addAttribute("product", product);
+        model.addAttribute("categories", categories);
+        return "admin/products/update";
     }
 
-    @PutMapping(value = "/img/{id}")
+    @PatchMapping("update/info/{id}")
+    public String updateProduct(
+            @PathVariable Long id,
+            @ModelAttribute @Valid ProductUpdateDto dto,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes,
+            Model model) {
+
+        List<CategoryResponse> categories = categoryService.getAllCategories();
+        model.addAttribute("categories", categories);
+
+        if (bindingResult.hasErrors()) {
+            Map<String, String> fieldErrors = bindingResult.getFieldErrors().stream()
+                    .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+            System.out.println(fieldErrors);
+            model.addAttribute("fieldErrors", fieldErrors);
+            ProductResponse product = productService.getProductById(id);
+            model.addAttribute("product", product);
+            return "admin/products/update";
+        }
+        productService.updateProduct(id, dto);
+        redirectAttributes.addFlashAttribute("success", "Cập nhật thành công!");
+        return "redirect:/admin/products/" + id;
+    }
+
+    @PatchMapping(value = "update/img/{id}")
     public String updateImageProduct(
             @PathVariable Long id,
-            @RequestParam(value = "images") MultipartFile[] images) {
-        productService.updateImageProduct(id, images);
-        return "Cập nhật ảnh sản phẩm thành công";
+            @RequestParam(value = "images") MultipartFile[] images,
+            RedirectAttributes redirectAttributes) {
+        try {
+            productService.updateImageProduct(id, images);
+            redirectAttributes.addFlashAttribute("success", "Cập nhật thành công!");
+        }
+        catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/admin/products/update/" + id;
+        }
+        return "redirect:/admin/products/" + id;
     }
 }

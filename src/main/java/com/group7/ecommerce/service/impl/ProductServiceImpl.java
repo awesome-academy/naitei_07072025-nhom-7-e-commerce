@@ -140,7 +140,37 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với id: " + id));
 
+        long count = Arrays.stream(images).filter(file -> !file.isEmpty()).count();
+        if (count == 0) {
+            throw new RuntimeException("Vui lòng chọn ít nhất 1 ảnh để update.");
+        }
+
         List<ProductImage> oldImages = productImageRepository.findByProductId(product.getId());
+
+        List<ProductImage> productImages = Arrays.stream(images)
+                .filter(file -> !file.isEmpty())
+                .map(file -> {
+                    String originalName = Optional.ofNullable(file.getOriginalFilename()).orElse("");
+                    if (!fileStorageService.isValidImageFile(originalName)) {
+                        throw new RuntimeException("File không phải ảnh hợp lệ: " + originalName);
+                    }
+                    String imageUrl;
+                    try {
+                        imageUrl = fileStorageService.copyImageToStatic(file);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Lỗi khi lưu file ảnh", e);
+                    }
+                    ProductImage img = new ProductImage();
+                    img.setImageUrl(imageUrl);
+                    img.setProduct(product);
+                    return img;
+                })
+                .toList();
+
+        if (!productImages.isEmpty()) {
+            productImageRepository.deleteAllByProductId(product.getId());
+            productImageRepository.saveAll(productImages);
+        }
 
         for (ProductImage img : oldImages) {
             try {
@@ -149,35 +179,8 @@ public class ProductServiceImpl implements ProductService {
                 throw new RuntimeException("Lỗi khi xóa file ảnh", e);
             }
         }
-        productImageRepository.deleteAllByProductId(product.getId());
-
-        if (images != null && images.length > 0) {
-            List<ProductImage> productImages = Arrays.stream(images)
-                    .filter(file -> !file.isEmpty())
-                    .map(file -> {
-                        String originalName = Optional.ofNullable(file.getOriginalFilename()).orElse("");
-                        if (!fileStorageService.isValidImageFile(originalName)) {
-                            throw new RuntimeException("File không phải ảnh hợp lệ: " + originalName);
-                        }
-                        String imageUrl;
-                        try {
-                            imageUrl = fileStorageService.copyImageToStatic(file);
-                        } catch (IOException e) {
-                            throw new RuntimeException("Lỗi khi lưu file ảnh", e);
-                        }
-                        ProductImage img = new ProductImage();
-                        img.setImageUrl(imageUrl);
-                        img.setProduct(product);
-
-                        return img;
-                    })
-                    .toList();
-
-            if (!productImages.isEmpty()) {
-                productImageRepository.saveAll(productImages);
-            }
-        }
     }
+
 
     @Override
     @Transactional(readOnly = true)
