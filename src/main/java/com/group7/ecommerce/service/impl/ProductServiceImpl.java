@@ -1,15 +1,19 @@
 package com.group7.ecommerce.service.impl;
 
 import com.group7.ecommerce.dto.request.ProductDto;
+import com.group7.ecommerce.dto.request.ProductFilterDto;
 import com.group7.ecommerce.dto.request.ProductUpdateDto;
 import com.group7.ecommerce.dto.response.ProductResponse;
 import com.group7.ecommerce.entity.Category;
+import com.group7.ecommerce.dto.response.ProductListItemResponse;
+import com.group7.ecommerce.dto.response.ProductListItemProjection;
 import com.group7.ecommerce.entity.Product;
 import com.group7.ecommerce.entity.ProductImage;
 import com.group7.ecommerce.mapper.ProductMapper;
 import com.group7.ecommerce.repository.CategoryRepository;
 import com.group7.ecommerce.repository.ProductImageRepository;
 import com.group7.ecommerce.repository.ProductRepository;
+import com.group7.ecommerce.repository.ProductSpecification;
 import com.group7.ecommerce.service.FileStorageService;
 import com.group7.ecommerce.service.ProductService;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,9 +23,11 @@ import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,6 +40,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ProductServiceImpl implements ProductService {
 
     private final Validator validator;
@@ -179,7 +186,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Page<ProductResponse> getAllPaged(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
@@ -189,7 +195,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Page<ProductResponse> getAllPagedAndSorted(int page, int size, String sortField, String sortDirection) {
         Sort sort = sortDirection.equalsIgnoreCase("asc") ?
                 Sort.by(sortField).ascending() :
@@ -287,5 +292,97 @@ public class ProductServiceImpl implements ProductService {
         if (cell == null) return false;
         if (cell.getCellType() == CellType.BOOLEAN) return cell.getBooleanCellValue();
         return Boolean.parseBoolean(cell.toString().trim());
+    }
+
+    @Override
+    public Page<ProductListItemResponse> getAllProducts(Pageable pageable) {
+        Page<ProductListItemProjection> projectionPage = productRepository.findAllActiveProducts(pageable);
+        
+        List<ProductListItemResponse> dtoList = projectionPage.getContent().stream()
+            .map(ProductListItemProjection::toProductListItemResponse)
+            .toList();
+        
+        return new PageImpl<>(dtoList, pageable, projectionPage.getTotalElements());
+    }
+    
+    @Override
+    public Page<ProductListItemResponse> getAllProducts(ProductFilterDto filterDto, Pageable pageable) {
+        // Nếu không có filter nào và sắp xếp là mặc định, sử dụng method cũ
+        if (isEmptyFilter(filterDto) && isDefaultSort(filterDto)) {
+            return getAllProducts(pageable);
+        }
+        
+        // Sử dụng Specifications để filter/sort động
+        Specification<Product> filterSpec = ProductSpecification.withFilter(filterDto);
+        Specification<Product> sortSpec = ProductSpecification.withSort(filterDto);
+        Specification<Product> combinedSpec = filterSpec.and(sortSpec);
+        
+        Page<Product> productPage = productRepository.findAll(combinedSpec, pageable);
+        
+        // Map sang DTO
+        List<ProductListItemResponse> dtoList = productPage.getContent().stream()
+            .map(this::mapToProductListItemResponse)
+            .toList();
+        
+        return new PageImpl<>(dtoList, pageable, productPage.getTotalElements());
+    }
+    
+    /**
+     * Kiểm tra xem có phải sắp xếp mặc định không
+     */
+    private boolean isDefaultSort(ProductFilterDto filterDto) {
+        if (filterDto == null) return true;
+        
+        String sortBy = filterDto.sortBy();
+        String sortDirection = filterDto.sortDirection();
+        
+        return (sortBy == null || "createdAt".equals(sortBy)) && 
+               (sortDirection == null || "desc".equals(sortDirection));
+    }
+    
+    /**
+     * Kiểm tra xem filter có rỗng hay không (không tính tham số sắp xếp)
+     */
+    private boolean isEmptyFilter(ProductFilterDto filterDto) {
+        if (filterDto == null) return true;
+        
+        return (filterDto.name() == null || filterDto.name().trim().isEmpty()) &&
+               (filterDto.description() == null || filterDto.description().trim().isEmpty()) &&
+               filterDto.minSellingPrice() == null &&
+               filterDto.maxSellingPrice() == null &&
+               filterDto.minImportPrice() == null &&
+               filterDto.maxImportPrice() == null &&
+               filterDto.minStockQuantity() == null &&
+               filterDto.maxStockQuantity() == null &&
+               filterDto.categoryId() == null &&
+               (filterDto.categoryName() == null || filterDto.categoryName().trim().isEmpty()) &&
+               filterDto.isFeatured() == null &&
+               filterDto.createdAfter() == null &&
+               filterDto.createdBefore() == null &&
+               filterDto.updatedAfter() == null &&
+               filterDto.updatedBefore() == null;
+    }
+    
+    /**
+     * Map Product entity sang ProductListItemResponse
+     */
+    private ProductListItemResponse mapToProductListItemResponse(Product product) {
+        String primaryImageUrl = product.getImages().stream()
+            .filter(ProductImage::isPrimary)
+            .map(ProductImage::getImageUrl)
+            .findFirst()
+            .orElse(null);
+            
+        String categoryName = product.getCategory() != null ? product.getCategory().getName() : null;
+        
+        return new ProductListItemResponse(
+            product.getId(),
+            product.getName(),
+            product.getDescription(),
+            product.getSellingPrice(),
+            primaryImageUrl,
+            categoryName,
+            product.getStockQuantity()
+        );
     }
 }
