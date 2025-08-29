@@ -56,5 +56,6 @@ public interface OrderService {
 	List<String> getAvailablePaymentMethods();
 	OrderDetailResp getOrderDetail(Authentication authentication, int orderId);
 	List<OrderSummaryResp> getUserOrders(Authentication authentication);
+	OrderDetailResp updatePaymentMethod(Authentication authentication, int orderId, UpdatePaymentMethodRequest request);
 
 }

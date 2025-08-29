@@ -84,6 +84,19 @@ public class OrderController {
                 getMessage("payment.methods.success"), paymentMethods));
     }
 
+    /**
+     * Cập nhật phương thức thanh toán
+     */
+    @PatchMapping("/{orderId}/payment-method")
+    public ResponseEntity<ApiResponse<OrderDetailResp>> updatePaymentMethod(
+            @PathVariable int orderId,
+            @Valid @RequestBody UpdatePaymentMethodRequest request,
+            Authentication authentication) {
+        OrderDetailResp orderDetail = orderService.updatePaymentMethod(authentication, orderId, request);
+        return ResponseEntity.ok(ApiResponse.success(
+                getMessage("order.payment.update.success"), orderDetail));
+    }
+
 
 
     /**
