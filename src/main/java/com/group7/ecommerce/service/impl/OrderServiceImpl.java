@@ -3,12 +3,14 @@ package com.group7.ecommerce.service.impl;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
 import com.group7.ecommerce.dto.request.CreateOrderRequest;
 import com.group7.ecommerce.dto.request.OrderRequestItem;
+import com.group7.ecommerce.dto.request.UpdatePaymentMethodRequest;
 import com.group7.ecommerce.entity.*;
 import com.group7.ecommerce.enums.OrderStatus;
 import com.group7.ecommerce.repository.*;
@@ -19,6 +21,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -320,6 +323,37 @@ public class OrderServiceImpl implements OrderService {
 		log.info("Order created from cart successfully for user {} with order ID {}", userDetails.getId(), order.getId());
 
 		return mapOrderToDetailDTO(order);
+	}
+
+	@Override
+	public List<String> getAvailablePaymentMethods() {
+		return Arrays.asList("COD", "BANK_TRANSFER", "VNPAY", "MOMO");
+	}
+
+	@Override
+	public OrderDetailResp getOrderDetail(Authentication authentication, int orderId) {
+		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+		Order order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+
+		// Kiểm tra quyền sở hữu
+		if (order.getUser().getId()!= userDetails.getId()) {
+			throw new RuntimeException(getMessage("error.order.access.denied"));
+		}
+
+		return mapOrderToDetailDTO(order);
+	}
+
+	@Override
+	public List<OrderSummaryResp> getUserOrders(Authentication authentication) {
+		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+		List<Order> orders = orderRepository.findByUserIdOrderByCreatedAtDesc(userDetails.getId());
+
+		return orders.stream()
+				.map(this::mapOrderToSummaryDTO)
+				.collect(Collectors.toList());
 	}
 
 }
